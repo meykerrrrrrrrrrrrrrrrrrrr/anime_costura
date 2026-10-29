@@ -1045,7 +1045,7 @@ footer {
 }
 
 /* ====================================================================
-   RESPONSIVE DESIGN (Tablets & Mobile)
+   RESPONSIVE DESIGN (Tablets & Mobile) & OPTIMIZACIÓN DE RENDIMIENTO
    ==================================================================== */
 @media (max-width: 992px) {
     .hero h1 {
@@ -1068,21 +1068,20 @@ footer {
 }
 
 @media (max-width: 768px) {
+    /* 1. OPTIMIZACIÓN CRÍTICA DE RENDIMIENTO EN MÓVILES (Evita saturar GPU, CPU y red) */
+    .anime-page-bg video,
+    .hero-video,
+    .anime-video-banner video {
+        display: none !important;
+    }
+    .anime-page-bg {
+        background: radial-gradient(circle at 50% 15%, #18181b 0%, #000000 80%) !important;
+    }
+
+    /* 2. Barra de Navegación */
     header {
-        height: auto;
-        padding: 0.8rem 5%;
-    }
-    .hero {
-        height: auto;
-        min-height: 80vh;
-        padding: 6rem 6% 4rem 6%;
-    }
-    .hero h1 {
-        font-size: 2.8rem;
-        letter-spacing: -0.5px;
-    }
-    .hero p {
-        font-size: 1.05rem;
+        height: 52px;
+        padding: 0.6rem 5%;
     }
     nav ul {
         display: none;
@@ -1095,18 +1094,71 @@ footer {
         flex-direction: column;
         justify-content: flex-start;
         align-items: flex-start;
-        padding: 2.5rem 8%;
-        gap: 1.5rem;
+        padding: 2rem 8%;
+        gap: 1.4rem;
         z-index: 999;
     }
     nav ul.nav-open {
         display: flex;
     }
     nav ul li a {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         font-weight: 500;
         color: var(--color-porcelain);
     }
+
+    /* 3. Hero y Secciones en Pantalla Móvil */
+    .hero {
+        height: auto;
+        min-height: 70vh;
+        padding: 4.5rem 6% 3rem 6%;
+    }
+    .hero h1 {
+        font-size: 2.3rem;
+        letter-spacing: -0.5px;
+        line-height: 1.1;
+    }
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 2rem;
+    }
+
+    /* 4. Tienda y Catálogo */
+    .products {
+        padding: 2rem 4%;
+    }
+    .product-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .product-media-container {
+        height: 280px;
+    }
+    .product-card {
+        border-radius: 22px;
+    }
+
+    /* 5. Detalle de Producto Adaptable */
+    .product-detail-section {
+        padding: 1.5rem 4%;
+    }
+    .product-detail-container {
+        grid-template-columns: 1fr;
+        padding: 1.5rem 1.2rem;
+        border-radius: 22px;
+        gap: 24px;
+    }
+    .main-image-container {
+        height: 320px;
+        border-radius: 16px;
+    }
+    .thumbnail-grid .thumb-img {
+        width: 54px;
+        height: 54px;
+        border-radius: 10px;
+    }
+
+    /* 6. Menú Hamburguesa */
     .menu-toggle {
         display: flex;
         flex-direction: column;
@@ -1134,8 +1186,5 @@ footer {
     }
     .menu-toggle.active span:nth-child(3) {
         transform: rotate(-45deg) translate(5px, -5px);
-    }
-    .product-grid {
-        grid-template-columns: 1fr;
     }
 }

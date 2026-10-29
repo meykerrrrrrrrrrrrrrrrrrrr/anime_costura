@@ -1,7 +1,7 @@
 // ====================================================================
 // PRODUCT-DETAIL.JS - Detalle de Prenda AnimeCostura
-// Apple Dark Design System (Series 12 Reference)
-// Carga Asíncrona Robusta & Prevención de Errores de Producto
+// Apple Dark Design System & Experiencia Móvil de Alta Fidelidad
+// Galería Adaptable con Carrusel Táctil & Configuración Compacta
 // ====================================================================
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -23,26 +23,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    if (prodTitle) prodTitle.textContent = 'Cargando prenda...';
-
-    // 1. Esperar a que el motor IndexedDB / Servidor termine de inicializarse
-    if (window.AnimeStorage && window.AnimeStorage.ready) {
-        await window.AnimeStorage.ready();
-    }
-
+    // 1. Obtener producto de inmediato de la memoria o caché
     let inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
     let product = inventory.find(p => String(p.id).trim() === String(productId).trim() || p.id == productId);
 
-    // 2. Si no se encuentra de inmediato, forzar revalidación con el servidor
-    if (!product && window.AnimeStorage && window.AnimeStorage.autoRevalidateServer) {
-        try {
-            await window.AnimeStorage.autoRevalidateServer();
-            inventory = window.AnimeStorage.getInventory();
-            product = inventory.find(p => String(p.id).trim() === String(productId).trim() || p.id == productId);
-        } catch (e) {}
+    // 2. Si aún no está listo el motor, esperar a ready()
+    if (!product && window.AnimeStorage && window.AnimeStorage.ready) {
+        await window.AnimeStorage.ready();
+        inventory = window.AnimeStorage.getInventory();
+        product = inventory.find(p => String(p.id).trim() === String(productId).trim() || p.id == productId);
     }
 
-    // 3. Fallback directo a data/inventory.json por si la caché local no lo cargó aún
+    // 3. Fallback directo a data/inventory.json solo si no existe en local
     if (!product) {
         try {
             const res = await fetch('../data/inventory.json?t=' + Date.now(), { cache: 'no-store' });
@@ -50,42 +42,26 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const data = await res.json();
                 if (Array.isArray(data)) {
                     product = data.find(p => String(p.id).trim() === String(productId).trim() || p.id == productId);
-                    if (product && window.AnimeStorage) {
-                        window.AnimeStorage.cache['anime_inventory'] = data;
-                    }
                 }
             }
         } catch (e) {}
     }
 
-    // 4. Fallback directo a localStorage
-    if (!product) {
-        try {
-            const raw = localStorage.getItem('anime_inventory');
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) {
-                    product = parsed.find(p => String(p.id).trim() === String(productId).trim() || p.id == productId);
-                }
-            }
-        } catch (e) {}
-    }
-
-    // Si después de todas las comprobaciones no existe, mostrar tarjeta estética dentro de la página
+    // Si después de todas las comprobaciones no existe
     if (!product) {
         const container = document.querySelector('.product-detail-container') || document.querySelector('.product-detail-section');
         if (container) {
             container.innerHTML = `
-                <div style="background: #111111; border-radius: 28px; padding: 4rem 2rem; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); max-width: 600px; margin: 3rem auto;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
-                    <h2 style="font-family: 'Inter', -apple-system, sans-serif; font-size: 1.75rem; font-weight: 600; color: #f5f5f7; margin-bottom: 0.8rem; letter-spacing: -0.28px;">
+                <div style="background: #111111; border-radius: 28px; padding: 3rem 1.5rem; text-align: center; border: 1px solid rgba(255, 255, 255, 0.08); max-width: 520px; margin: 2rem auto;">
+                    <div style="font-size: 2.8rem; margin-bottom: 0.8rem;">👕</div>
+                    <h2 style="font-size: 1.5rem; font-weight: 600; color: #f5f5f7; margin-bottom: 0.6rem; letter-spacing: -0.28px;">
                         Prenda no encontrada
                     </h2>
-                    <p style="color: #86868b; font-size: 1rem; line-height: 1.5; margin-bottom: 2rem;">
-                        La prenda solicitada no está disponible en este momento o fue actualizada en el catálogo.
+                    <p style="color: #86868b; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.8rem;">
+                        La prenda solicitada no está disponible en este momento.
                     </p>
-                    <a href="tienda.html" class="btn-primary" style="display: inline-block; background: #0071e3; color: #ffffff; padding: 12px 28px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 0.95rem;">
-                        Volver al Catálogo
+                    <a href="tienda.html" class="btn-primary" style="display: inline-block; padding: 12px 28px;">
+                        Volver a la Tienda
                     </a>
                 </div>
             `;
@@ -96,123 +72,223 @@ document.addEventListener('DOMContentLoaded', async () => {
     const rawImages = (product.img && product.img.length > 0) ? product.img : ['../assets/media/marin.jpg'];
     const formattedImages = rawImages.map(img => window.formatImagePath ? window.formatImagePath(img) : img);
 
-    // Tipografía Apple Porcelain & SF Pro Display (Inter)
+    // Tipografía Apple Porcelain
     if (prodTitle) prodTitle.textContent = product.name;
     if (prodPrice) prodPrice.textContent = `$${product.price}`;
-    if (prodDesc) prodDesc.textContent = product.desc || 'Prenda exclusiva confeccionada con los más altos estándares textiles inspirada en el arte anime.';
+    if (prodDesc) prodDesc.textContent = product.desc || 'Prenda exclusiva confeccionada con estándares de alta costura inspirada en el anime.';
     if (mainImg) mainImg.src = formattedImages[0];
 
-    // Miniaturas estilo Apple (radius 10px, clean 1px border)
-    if (thumbGrid) {
-        thumbGrid.innerHTML = '';
-        formattedImages.forEach((imgSrc, idx) => {
-            const img = document.createElement('img');
-            img.src = imgSrc;
-            img.className = `thumb-img ${idx === 0 ? 'active' : ''}`;
-            img.style.borderRadius = '10px';
-            img.style.cursor = 'pointer';
-            img.style.border = idx === 0 ? '2px solid #0071e3' : '1px solid rgba(255, 255, 255, 0.15)';
-            img.style.width = '70px';
-            img.style.height = '70px';
-            img.style.objectFit = 'cover';
-            img.onclick = () => {
-                if (mainImg) mainImg.src = imgSrc;
-                document.querySelectorAll('.thumb-img').forEach(t => {
-                    t.classList.remove('active');
-                    t.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-                });
-                img.classList.add('active');
-                img.style.border = '2px solid #0071e3';
-            };
-            thumbGrid.appendChild(img);
-        });
+    // ====================================================================
+    // GALERÍA MULTIMEDIA ADAPTABLE PARA MÓVIL Y ESCRITORIO
+    // ====================================================================
+    let currentPhotoIndex = 0;
+
+    // Badge contador de fotos
+    const galleryContainer = document.querySelector('.product-gallery');
+    let photoCounter = document.getElementById('photo-counter-badge');
+    if (!photoCounter && galleryContainer) {
+        photoCounter = document.createElement('div');
+        photoCounter.id = 'photo-counter-badge';
+        photoCounter.style.display = formattedImages.length > 1 ? 'inline-flex' : 'none';
+        photoCounter.style.alignItems = 'center';
+        photoCounter.style.gap = '6px';
+        photoCounter.style.background = '#311400';
+        photoCounter.style.color = '#ff791b';
+        photoCounter.style.fontSize = '12px';
+        photoCounter.style.fontWeight = '600';
+        photoCounter.style.padding = '4px 10px';
+        photoCounter.style.borderRadius = '5px';
+        photoCounter.style.width = 'fit-content';
+        photoCounter.style.marginBottom = '8px';
+        galleryContainer.insertBefore(photoCounter, galleryContainer.firstChild);
     }
 
-    // --- Configuración de Pedido Estilo Apple (Charcoal Stage, Pill Inputs) ---
-    const availableSizes = product.sizes ? product.sizes.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'];
+    function updatePhotoView(index) {
+        if (index < 0) index = formattedImages.length - 1;
+        if (index >= formattedImages.length) index = 0;
+        currentPhotoIndex = index;
+
+        if (mainImg) {
+            mainImg.style.opacity = '0.6';
+            mainImg.src = formattedImages[currentPhotoIndex];
+            setTimeout(() => { mainImg.style.opacity = '1'; }, 100);
+        }
+
+        if (photoCounter) {
+            photoCounter.textContent = `📷 Foto ${currentPhotoIndex + 1} de ${formattedImages.length}`;
+        }
+
+        // Actualizar miniaturas activas
+        if (thumbGrid) {
+            const thumbs = thumbGrid.querySelectorAll('.thumb-img');
+            thumbs.forEach((t, i) => {
+                if (i === currentPhotoIndex) {
+                    t.classList.add('active');
+                    t.style.borderColor = '#0071e3';
+                    t.style.transform = 'scale(1.05)';
+                    t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                } else {
+                    t.classList.remove('active');
+                    t.style.borderColor = 'rgba(255, 255, 255, 0.12)';
+                    t.style.transform = 'scale(1)';
+                }
+            });
+        }
+    }
+
+    // Renderizar miniaturas táctiles en cinta horizontal
+    if (thumbGrid) {
+        thumbGrid.innerHTML = '';
+        if (formattedImages.length > 1) {
+            formattedImages.forEach((imgSrc, idx) => {
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.className = `thumb-img ${idx === 0 ? 'active' : ''}`;
+                img.alt = `${product.name} - Foto ${idx + 1}`;
+                img.style.width = '64px';
+                img.style.height = '64px';
+                img.style.borderRadius = '12px';
+                img.style.objectFit = 'cover';
+                img.style.cursor = 'pointer';
+                img.style.border = idx === 0 ? '2px solid #0071e3' : '1px solid rgba(255, 255, 255, 0.12)';
+                img.style.flexShrink = '0';
+                img.style.transition = 'transform 0.2s, border-color 0.2s';
+
+                img.onclick = () => updatePhotoView(idx);
+                thumbGrid.appendChild(img);
+            });
+        } else {
+            thumbGrid.style.display = 'none';
+        }
+    }
+
+    updatePhotoView(0);
+
+    // ====================================================================
+    // CONFIGURACIÓN DE PEDIDO COMPACTA Y ULTRA LIMPIA (APPLE SYSTEM)
+    // ====================================================================
+    const availableSizes = product.sizes ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : ['S', 'M', 'L', 'XL'];
+    let selectedSize = availableSizes[0] || 'Única';
+    let selectedQuantity = 1;
 
     if (configContainer) {
         configContainer.innerHTML = '';
-        formattedImages.forEach((imgSrc, index) => {
-            const colorSection = document.createElement('div');
-            colorSection.className = 'color-option-group';
-            colorSection.style.background = '#111111';
-            colorSection.style.borderRadius = '20px';
-            colorSection.style.padding = '1.25rem 1.5rem';
-            colorSection.style.marginBottom = '1.2rem';
-            colorSection.style.border = '1px solid rgba(255, 255, 255, 0.08)';
 
-            colorSection.innerHTML = `
-                <div class="color-header" style="display:flex; align-items:center; gap:14px; margin-bottom:1rem;">
-                    <img src="${imgSrc}" class="color-thumb" style="width:48px; height:48px; border-radius:10px; object-fit:cover; border:1px solid rgba(255,255,255,0.2);">
-                    <div>
-                        <span style="color:#f5f5f7; font-weight:600; font-size:0.95rem; display:block;">Foto / Variante #${index + 1}</span>
-                        <small style="color:#86868b; font-size:0.8rem;">Selecciona las unidades por talla</small>
-                    </div>
-                </div>
-                <div class="sizes-grid" style="display:flex; gap:12px; flex-wrap:wrap;">
-                    ${availableSizes.map(size => `
-                        <div class="size-input-group" style="display:flex; flex-direction:column; align-items:center; background:rgba(255,255,255,0.04); padding:8px 14px; border-radius:16px; border:1px solid #6e6e73;">
-                            <label style="color:#86868b; font-size:0.8rem; font-weight:600; margin-bottom:4px;">${size}</label>
-                            <input type="number" min="0" value="0"
-                                   class="size-qty"
-                                   data-variant="${index}"
-                                   data-size="${size}"
-                                   style="width:50px; text-align:center; background:transparent; color:#f5f5f7; border:none; font-weight:600; font-size:1.05rem; outline:none;"
-                                   oninput="updateOrderTotals()">
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            configContainer.appendChild(colorSection);
+        const configWrapper = document.createElement('div');
+        configWrapper.style.display = 'flex';
+        configWrapper.style.flexDirection = 'column';
+        configWrapper.style.gap = '1.4rem';
+
+        // 1. Selector de Tallas con Píldoras Interactivas
+        const sizeBlock = document.createElement('div');
+        sizeBlock.innerHTML = `
+            <label style="color:#86868b; font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:-0.12px; margin-bottom:8px; display:block;">
+                Talla: <span id="label-selected-size" style="color:#f5f5f7; font-weight:600;">${selectedSize}</span>
+            </label>
+            <div id="size-pills-row" style="display:flex; gap:10px; flex-wrap:wrap;">
+                ${availableSizes.map(size => `
+                    <button type="button" class="size-pill-btn ${size === selectedSize ? 'active' : ''}" data-size="${size}"
+                        style="padding: 10px 20px; border-radius: 9999px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+                        background: ${size === selectedSize ? '#0071e3' : 'rgba(255,255,255,0.05)'};
+                        color: ${size === selectedSize ? '#ffffff' : '#f5f5f7'};
+                        border: 1px solid ${size === selectedSize ? '#0071e3' : '#6e6e73'};">
+                        ${size}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+
+        // 2. Selector de Cantidad con Stepper Apple
+        const qtyBlock = document.createElement('div');
+        qtyBlock.innerHTML = `
+            <label style="color:#86868b; font-size:0.85rem; font-weight:600; text-transform:uppercase; letter-spacing:-0.12px; margin-bottom:8px; display:block;">
+                Cantidad de Unidades
+            </label>
+            <div style="display:inline-flex; align-items:center; background:rgba(255,255,255,0.05); border:1px solid #6e6e73; border-radius:9999px; padding:4px 6px;">
+                <button type="button" id="btn-qty-minus" style="width:36px; height:36px; border-radius:50%; background:transparent; border:none; color:#f5f5f7; font-size:18px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center;">−</button>
+                <span id="qty-display" style="width:48px; text-align:center; font-size:16px; font-weight:600; color:#f5f5f7;">1</span>
+                <button type="button" id="btn-qty-plus" style="width:36px; height:36px; border-radius:50%; background:transparent; border:none; color:#f5f5f7; font-size:18px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center;">+</button>
+            </div>
+        `;
+
+        configWrapper.appendChild(sizeBlock);
+        configWrapper.appendChild(qtyBlock);
+        configContainer.appendChild(configWrapper);
+
+        // Eventos de selección de talla
+        const sizeButtons = configContainer.querySelectorAll('.size-pill-btn');
+        sizeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                sizeButtons.forEach(b => {
+                    b.classList.remove('active');
+                    b.style.background = 'rgba(255,255,255,0.05)';
+                    b.style.color = '#f5f5f7';
+                    b.style.borderColor = '#6e6e73';
+                });
+                btn.classList.add('active');
+                btn.style.background = '#0071e3';
+                btn.style.color = '#ffffff';
+                btn.style.borderColor = '#0071e3';
+
+                selectedSize = btn.dataset.size;
+                const sizeLabel = document.getElementById('label-selected-size');
+                if (sizeLabel) sizeLabel.textContent = selectedSize;
+                updateTotals();
+            });
         });
-    }
 
-    // Función para calcular totales con precisión
-    window.updateOrderTotals = () => {
-        let totalQty = 0;
-        const inputs = document.querySelectorAll('.size-qty');
-        inputs.forEach(input => {
-            totalQty += parseInt(input.value) || 0;
-        });
+        // Eventos de cantidad
+        const btnMinus = document.getElementById('btn-qty-minus');
+        const btnPlus = document.getElementById('btn-qty-plus');
+        const qtyDisplay = document.getElementById('qty-display');
 
-        const rawPriceClean = (product.price || '0').toString().replace(/[^0-9.]/g, '');
-        const unitPrice = parseFloat(rawPriceClean) || 0;
-        const totalCost = totalQty * unitPrice;
-
-        if (totalCountEl) totalCountEl.textContent = totalQty;
-        if (totalPriceEl) totalPriceEl.textContent = `$${totalCost.toLocaleString('es-CO')}`;
-    };
-
-    // --- Botón Añadir al Carrito (Apple Blue Purchase Pill) ---
-    if (btnAddCart) {
-        btnAddCart.onclick = () => {
-            const selections = [];
-            const inputs = document.querySelectorAll('.size-qty');
-
-            inputs.forEach(input => {
-                const qty = parseInt(input.value) || 0;
-                if (qty > 0) {
-                    selections.push({
-                        variant: input.dataset.variant,
-                        size: input.dataset.size,
-                        quantity: qty
-                    });
+        if (btnMinus) {
+            btnMinus.addEventListener('click', () => {
+                if (selectedQuantity > 1) {
+                    selectedQuantity--;
+                    if (qtyDisplay) qtyDisplay.textContent = selectedQuantity;
+                    updateTotals();
                 }
             });
+        }
 
-            if (selections.length === 0) {
-                alert('Por favor, indica al menos 1 unidad en la talla deseada.');
-                return;
-            }
+        if (btnPlus) {
+            btnPlus.addEventListener('click', () => {
+                selectedQuantity++;
+                if (qtyDisplay) qtyDisplay.textContent = selectedQuantity;
+                updateTotals();
+            });
+        }
+    }
 
+    // Actualizar resumen y total
+    function updateTotals() {
+        const rawPriceClean = (product.price || '0').toString().replace(/[^0-9.]/g, '');
+        const unitPrice = parseFloat(rawPriceClean) || 0;
+        const total = selectedQuantity * unitPrice;
+
+        if (totalCountEl) totalCountEl.textContent = `${selectedQuantity} (${selectedSize})`;
+        if (totalPriceEl) totalPriceEl.textContent = `$${total.toLocaleString('es-CO')}`;
+    }
+
+    updateTotals();
+
+    // ====================================================================
+    // BOTÓN AÑADIR AL CARRITO (APPLE BLUE PURCHASE PILL)
+    // ====================================================================
+    if (btnAddCart) {
+        btnAddCart.onclick = () => {
             const cartItem = {
                 productId: product.id,
                 name: product.name,
                 price: product.price,
-                img: formattedImages[0],
-                details: selections,
-                totalQty: selections.reduce((sum, item) => sum + item.quantity, 0)
+                img: formattedImages[currentPhotoIndex] || formattedImages[0],
+                details: [{
+                    size: selectedSize,
+                    quantity: selectedQuantity,
+                    variant: currentPhotoIndex
+                }],
+                totalQty: selectedQuantity
             };
 
             const cart = JSON.parse(localStorage.getItem('anime_cart')) || [];
@@ -221,7 +297,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('anime_cart', JSON.stringify(cart));
             } catch (e) {}
 
-            alert(`✨ ¡${cartItem.totalQty} prenda(s) de "${product.name}" añadidas a tu carrito!`);
+            alert(`✨ ¡${selectedQuantity} unidad(es) de "${product.name}" (Talla ${selectedSize}) añadidas a tu carrito!`);
             window.location.href = 'carrito.html';
         };
     }
