@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Inventario</title>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../modals.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Quiénes Somos</a></li>
+                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="inventario.html" class="active">Inventario</a></li>
+                <li><a href="finanzas.html">Finanzas</a></li>
+                <li><a href="clientes.html">Clientes</a></li>
+                <li><a href="perfil.html">Mi Perfil</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-secondary.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <section class="admin-section" style="background: transparent; min-height: 85vh; padding: 4rem 5%;">
+        <h2 class="section-title" style="color: #ffffff; text-shadow: 0 4px 15px rgba(0,0,0,0.8);">Gestión de Inventario Profesional</h2>
+        
+        <!-- Barra de Despliegue en GitHub & Vercel con Almacenamiento Ilimitado -->
+        <div class="vercel-sync-bar glass-panel" style="margin-bottom: 2rem; padding: 1.5rem 2rem; border-radius: 18px; border: 1px solid rgba(108, 92, 231, 0.4); background: rgba(18, 18, 30, 0.75);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap;">
+                        <h3 style="margin: 0; color: #fff; font-size: 1.25rem;">🚀 Sincronización GitHub & Vercel</h3>
+                        <span style="background: rgba(46, 204, 113, 0.2); color: #2ecc71; border: 1px solid #2ecc71; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                            🟢 Espacio Ilimitado Activo (IndexedDB)
+                        </span>
+                    </div>
+                    <p style="margin: 0; color: #cbd5e1; font-size: 0.88rem; line-height: 1.5;">
+                        Sube todas las fotos que quieras sin límites de espacio. Para publicar cambios en tu web en vivo de Vercel, descarga tu catálogo y súbelo a GitHub.
+                    </p>
+                </div>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btn-export-catalog" class="btn-primary" style="padding: 10px 18px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; cursor: pointer;">
+                        📥 Descargar inventory.json
+                    </button>
+                    <button id="btn-import-trigger" class="btn-secondary" style="padding: 10px 18px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); cursor: pointer;">
+                        📤 Cargar Archivo JSON
+                    </button>
+                    <input type="file" id="file-import-catalog" accept=".json" style="display: none;">
+                    <button id="btn-sync-server" class="btn-secondary" style="padding: 10px 18px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; border-radius: 10px; background: rgba(108, 92, 231, 0.25); border: 1px solid rgba(108, 92, 231, 0.5); cursor: pointer;">
+                        🔄 Recargar de Servidor
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="admin-container" style="max-width: 1250px; margin: 0 auto;">
+            <div class="add-product-form">
+                <h3>Agregar Nuevo Producto</h3>
+                <div class="form-group">
+                    <label>Nombre del Diseño</label>
+                    <input type="text" id="new-prod-name" placeholder="Ej: Goku Ultra Instinct Tee">
+
+                    <label>Precio ($)</label>
+                    <input type="text" id="new-prod-price" placeholder="Ej: 25.00">
+
+                    <label>Descripción del Producto</label>
+                    <textarea id="new-prod-desc" rows="3" placeholder="Describe la tela, el estilo, etc..." style="width:100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; margin-bottom: 1rem;"></textarea>
+
+                    <label>Tallas Disponibles (separadas por coma)</label>
+                    <input type="text" id="new-prod-sizes" placeholder="Ej: S, M, L, XL">
+
+                    <label>Colores Disponibles (separadas por coma)</label>
+                    <input type="text" id="new-prod-colors" placeholder="Ej: Negro, Blanco, Rojo">
+
+                    <label>Imagen o Diseño del Producto (Sube todas las fotos que quieras)</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <select id="new-prod-preset" style="padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; width: 100%; font-family: inherit;">
+                            <option value="">📁 Subir archivo(s) desde mi equipo (opción abajo)</option>
+                            <option value="../assets/media/marin.jpg">🌸 Kitagawa Marín (Preajuste Anime)</option>
+                            <option value="../assets/media/musashi.jpg">⚔️ Miyamoto Musashi (Preajuste Ronin)</option>
+                            <option value="../assets/media/wallpaper-bw.jpg">🖤 Noir Streetwear 4K (Preajuste B&W)</option>
+                        </select>
+                    </div>
+                    <input type="file" id="new-prod-files" accept="image/*" multiple style="width: 100%; padding: 0.6rem; background: rgba(255,255,255,0.08); color: #ffffff; border-radius: 8px; border: 1px solid rgba(255,255,255,0.25);">
+                    <div id="new-prod-previews" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;"></div>
+                    <small style="color: #cbd5e1; display: block; margin-top: 4px; font-size: 0.8rem;">* Puedes subir múltiples fotos sin preocuparte por el espacio. IndexedDB almacena todo de forma ilimitada.</small>
+
+                    <button id="add-prod-btn" class="btn-primary" style="margin-top: 1.5rem; width: 100%; border-radius: 12px; padding: 1rem; font-size: 1rem; font-weight: bold; cursor: pointer;">Guardar en Inventario</button>
+                </div>
+            </div>
+
+            <div class="inventory-list">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="margin: 0; display: inline-block;">Productos Actuales</h3>
+                        <span id="inventory-count" style="margin-left: 8px; color: #a29bfe; font-size: 0.9rem; font-weight: 600;"></span>
+                    </div>
+                    <div style="position: relative; min-width: 250px; flex: 1; max-width: 380px;">
+                        <input type="text" id="inventory-search" placeholder="Buscar por nombre, tela, precio, talla..." 
+                               style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; background: rgba(255, 255, 255, 0.08); color: #ffffff; border: 1px solid rgba(108, 92, 231, 0.4); border-radius: 12px; font-size: 0.92rem; font-family: inherit; transition: all 0.3s ease;">
+                        <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 1.05rem; color: #a29bfe; pointer-events: none;">🔍</span>
+                    </div>
+                </div>
+                <table id="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Tallas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventory-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+
+    <!-- Modal de Edición -->
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 style="margin-bottom: 1.5rem; text-transform: uppercase;">Editar Producto</h2>
+            <div class="form-group">
+                <label>Nombre del Diseño</label>
+                <input type="text" id="edit-prod-name">
+
+                <label>Precio ($)</label>
+                <input type="text" id="edit-prod-price">
+
+                <label>Descripción</label>
+                <textarea id="edit-prod-desc" rows="3" style="width:100%; padding: 0.8rem; border: 1px solid #ddd; margin-bottom: 1rem;"></textarea>
+
+                <label>Tallas</label>
+                <input type="text" id="edit-prod-sizes">
+
+                <label>Colores</label>
+                <input type="text" id="edit-prod-colors">
+
+                <label>Imágenes Actuales (Haz clic en X para quitar)</label>
+                <div id="edit-img-preview" class="img-preview-grid"></div>
+
+                <label>Añadir más imágenes</label>
+                <input type="file" id="edit-prod-files" accept="image/*" multiple>
+
+                <button id="save-edit-btn" class="btn-primary" style="margin-top: 1.5rem; width: 100%;">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts de Motor y Lógica -->
+    <script src="../storage.js"></script>
+    <script src="inventario.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

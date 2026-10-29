@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Gestión de Clientes</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-customers-section {
+            padding: 5rem 5%;
+            background: var(--gray);
+            min-height: 80vh;
+        }
+        .customers-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .customers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--primary);
+            padding-bottom: 1rem;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .customers-header h2 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 2rem;
+            color: var(--secondary);
+            margin: 0;
+        }
+        .search-box {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.5rem;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            outline: none;
+            transition: 0.3s;
+        }
+        .search-box input:focus {
+            border-color: var(--primary);
+        }
+        .search-box .search-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+        }
+        .customers-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'Poppins', sans-serif;
+        }
+        .customers-table th, .customers-table td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        .customers-table th {
+            background-color: #f8f9fa;
+            color: #666;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .status-nuevo { background: #dfe6e9; color: #636e72; }
+        .status-casual { background: #ffeaa7; color: #d35400; }
+        .status-reconocido { background: #dff9fb; color: #0984e3; border: 1px solid #0984e3; }
+
+        .contact-btns {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-contact {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+            color: white;
+        }
+        .btn-whatsapp { background: #25D366; }
+        .btn-phone { background: #3498db; }
+        .btn-contact:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="finanzas.html">Finanzas</a></li>
+                <li><a href="clientes.html" class="active">Clientes</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-secondary.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <section class="admin-customers-section" style="background: transparent;">
+        <div class="customers-container glass-panel" style="padding: 2.5rem;">
+            <div class="customers-header">
+                <h2>Panel de Clientes</h2>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="customer-search" placeholder="Buscar cliente por nombre o documento...">
+                </div>
+                <div id="total-customers" style="font-weight: bold; color: var(--primary);">Cargando clientes...</div>
+            </div>
+            <table class="customers-table">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Documento</th>
+                        <th>Clave</th>
+                        <th>WhatsApp</th>
+                        <th>Créditos</th>
+                        <th>Nivel</th>
+                        <th>Contacto</th>
+                    </tr>
+                </thead>
+                <tbody id="customers-body">
+                    <!-- Cargado por JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+    <script src="clientes.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

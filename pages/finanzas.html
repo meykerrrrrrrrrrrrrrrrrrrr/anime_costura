@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Finanzas</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Quiénes Somos</a></li>
+                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="diseno.html">Diseñador Pro</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="finanzas.html" class="active">Finanzas</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-hero.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <section class="finance-section" style="background: transparent; min-height: 85vh; padding: 4rem 5%;">
+        <h2 class="section-title" style="color: #ffffff; text-shadow: 0 4px 15px rgba(0,0,0,0.8);">Panel de Control Financiero</h2>
+
+        <div class="finance-grid">
+            <!-- Tarjetas de Resumen -->
+            <div class="stat-card income">
+                <h3>Ingresos Totales</h3>
+                <p id="stat-income">$0.00</p>
+            </div>
+            <div class="stat-card expenses">
+                <h3>Egresos Totales</h3>
+                <p id="stat-expenses">$0.00</p>
+            </div>
+            <div class="stat-card net">
+                <h3>Producto Neto</h3>
+                <p id="stat-net">$0.00</p>
+            </div>
+            <div class="stat-card stock">
+                <h3>Items en Inventario</h3>
+                <p id="stat-stock">0</p>
+            </div>
+        </div>
+
+        <div class="finance-details">
+            <div class="detail-box">
+                <h3>Prendas Más Vendidas</h3>
+                <ul id="best-sellers-list">
+                    <!-- Cargado dinámicamente -->
+                </ul>
+            </div>
+            <div class="detail-box">
+                <h3>Registro de Movimientos</h3>
+                <div class="movement-form">
+                    <input type="text" id="move-desc" placeholder="Concepto (ej: Venta Camiseta)">
+                    <input type="number" id="move-amount" placeholder="Monto">
+                    <select id="move-type">
+                        <option value="income">Ingreso</option>
+                        <option value="expense">Egreso</option>
+                    </select>
+                    <button id="add-move-btn" class="btn-primary">Registrar</button>
+                </div>
+                <table id="finance-table">
+                    <thead>
+                        <tr>
+                            <th>Concepto</th>
+                            <th>Tipo</th>
+                            <th>Monto</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+
+    <script src="../storage.js"></script>
+    <script src="finanzas.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

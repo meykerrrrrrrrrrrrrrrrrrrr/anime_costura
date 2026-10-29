@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Tienda</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul class="nav-links">
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Quiénes Somos</a></li>
+                <li><a href="tienda.html" class="active">Tienda</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="perfil.html">Mi Perfil</a></li>
+                <li><a href="carrito.html" class="cart-nav-link">🛒 Carrito (<span id="nav-cart-count">0</span>)</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo con Máscara Estética -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-hero.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <!-- Banner Superior con Video Anime Secundario -->
+    <section class="anime-video-banner" style="min-height: 320px; border-bottom: 2px solid rgba(108, 92, 231, 0.4);">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-secondary.mp4" type="video/mp4">
+        </video>
+        <div class="banner-overlay"></div>
+        <div class="banner-content">
+            <h2>Colección AnimeCostura</h2>
+            <p>Diseños urbanos y cosplay confeccionados con dedicación, inspirados en el arte manga y anime.</p>
+            <div class="search-container" style="margin: 0 auto; max-width: 650px;">
+                <input type="text" id="shop-search" placeholder="Buscar por personaje, prenda o estilo (ej: Marín, Musashi, Hoodie)...">
+                <span class="search-icon">🔍</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="products" style="background: transparent; padding-top: 2rem;">
+        <div class="product-grid" id="product-display" style="background: transparent; border: none; gap: 25px;">
+            <!-- Los productos se renderizan dinámicamente -->
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../storage.js"></script>
+    <script src="tienda.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Carrito</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Quiénes Somos</a></li>
+                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="diseno.html">Diseñador Pro</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-secondary.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <section class="cart-section" style="background: transparent; min-height: 85vh; padding-top: 3rem;">
+        <h2 class="section-title" style="color: #ffffff; text-shadow: 0 4px 15px rgba(0,0,0,0.8); margin-bottom: 2rem;">Tu Carrito Otaku</h2>
+        <div class="cart-container">
+            <div class="cart-table-wrapper glass-panel">
+                <table id="cart-table">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Producto</th>
+                            <th>Detalles</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cart-body">
+                        <!-- Items cargados por JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cart-summary glass-panel">
+                <h3>Resumen del Pedido</h3>
+                <div class="summary-item">
+                    <span>Total de prendas:</span>
+                    <span id="cart-total-qty">0</span>
+                </div>
+                <div class="summary-item total">
+                    <span>Monto Total a Pagar:</span>
+                    <span id="cart-total-price">$0.00</span>
+                </div>
+                <button id="btn-checkout" class="btn-primary" style="width: 100%; margin-top: 1rem;">Finalizar Compra</button>
+                <a href="tienda.html" class="btn-secondary" style="display: block; text-align: center; margin-top: 1rem; text-decoration: none;">Seguir Comprando</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal para Ver Imagen en Grande -->
+    <div id="img-zoom-modal" class="modal" style="display: none; z-index: 3000;">
+        <div class="modal-content" style="width: auto; max-width: 80%; margin: 5% auto; text-align: center;">
+            <span class="close-zoom" style="cursor: pointer; float: right; font-size: 30px; font-weight: bold; color: #aaa;">&times;</span>
+            <img id="zoomed-img" src="" alt="Vista ampliada" style="max-width: 100%; max-height: 80vh; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+        </div>
+    </div>
+
+    <!-- Modal de Finalización de Compra -->
+    <div id="checkout-modal" class="modal" style="display: none; z-index: 2500;">
+        <div class="modal-content">
+            <span class="close-modal" id="close-checkout">&times;</span>
+            <h2 style="font-family: 'Permanent Marker'; color: var(--primary);">Finalizar Pedido</h2>
+
+            <div id="checkout-step-1">
+                <p>Selecciona el método de entrega:</p>
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                    <button class="btn-primary" onclick="setDelivery('envio')" style="flex:1">Envío a Domicilio</button>
+                    <button class="btn-primary" onclick="setDelivery('local')" style="flex:1">Retiro en Local</button>
+                </div>
+            </div>
+
+            <div id="checkout-step-2" style="display: none;">
+                <div id="delivery-info-envio" style="display: none; margin-bottom: 1rem;">
+                    <p><strong>Datos de Envío:</strong></p>
+                    <input type="text" id="delivery-city" placeholder="Municipio / Ciudad" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
+                    <input type="text" id="delivery-address" placeholder="Dirección Completa" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
+                    <input type="text" id="delivery-ref" placeholder="Punto de Referencia" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #ddd;">
+                </div>
+                <div id="delivery-info-local" style="display: none; margin-bottom: 1rem;">
+                    <p><strong>Retiro en Local:</strong> El pedido estará listo para retirar.</p>
+                </div>
+
+                <p>Método de Pago:</p>
+                <select id="payment-method" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #ddd;">
+                    <option value="transferencia">Transferencia / Nequi</option>
+                    <option value="efectivo">Efectivo</option>
+                </select>
+
+                <div id="payment-transfer-info" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #f0f2f5; border-radius: 10px; border-left: 5px solid var(--primary);">
+                    <p>Por favor, realiza el pago a la siguiente cuenta:</p>
+                    <p id="admin-nequi-info" style="font-weight: bold; font-size: 1.2rem; color: var(--primary);">Cargando información...</p>
+                    <p style="font-size: 0.9rem;">Sube la captura del pago para validar:</p>
+                    <input type="file" id="payment-screenshot" accept="image/*" style="width: 100%; margin-top: 0.5rem;">
+                </div>
+
+                <div id="payment-cash-info" style="display: none; margin-bottom: 1rem;">
+                    <p>Monto con el que pagará (para el cambio):</p>
+                    <input type="number" id="payment-cash-amount" placeholder="Ej: 50000" style="width: 100%; padding: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
+                </div>
+
+            <ul style="list-style: none; padding: 0; margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
+                <li>✅ Datos de envío registrados</li>
+                <li>✅ Método de pago seleccionado</li>
+                <li>✅ Captura de pago adjuntada (si aplica)</li>
+            </ul>
+            <button id="btn-confirm-order" class="btn-primary" style="width: 100%; margin-top: 1rem;">Confirmar Pedido</button>
+        </div>
+    </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+
+    <script src="../storage.js"></script>
+    <script src="cart.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

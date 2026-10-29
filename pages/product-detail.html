@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnimeCostura - Detalles del Producto</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Anime<span>Costura</span></div>
+            <ul>
+                <li><a href="../index.html">Inicio</a></li>
+                <li><a href="nosotros.html">Quiénes Somos</a></li>
+                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="perfil.html">Mi Perfil</a></li>
+                <li><a href="carrito.html">🛒 Carrito</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Fondo de Video Anime Fijo -->
+    <div class="anime-page-bg">
+        <video autoplay muted loop playsinline>
+            <source src="../assets/media/video-hero.mp4" type="video/mp4">
+        </video>
+        <div class="anime-bg-overlay"></div>
+    </div>
+
+    <section class="product-detail-section" style="padding: 4rem 5%; min-height: 85vh;">
+        <div class="product-detail-container glass-panel" style="padding: 3rem; margin-top: 1rem;">
+            <div class="product-gallery">
+                <div class="main-image-container">
+                    <img id="main-product-img" src="" alt="Producto">
+                </div>
+                <div class="thumbnail-grid" id="thumbnail-grid">
+                    <!-- Miniaturas cargadas por JS -->
+                </div>
+            </div>
+            <div class="product-info-detail">
+                <h1 id="prod-title">Cargando...</h1>
+                <p id="prod-price" class="price-tag">$0.00</p>
+                <div class="detail-divider"></div>
+                <div class="detail-item">
+                    <strong>Descripción:</strong>
+                    <p id="prod-desc">Cargando descripción...</p>
+                </div>
+                <div class="order-configuration">
+                    <h3 style="color: #ff00ff; margin-bottom: 1rem;">Configurar Pedido</h3>
+                    <div id="config-container">
+                        <!-- Generado dinámicamente por JS -->
+                    </div>
+                </div>
+                <div class="total-section" style="text-align: right; margin-top: 20px; font-weight: bold; border-top: 1px solid #444; padding-top: 10px;">
+                    <p>Total prendas: <span id="total-count">0</span></p>
+                    <p>Total estimado: <span id="total-price">$0.00</span></p>
+                </div>
+                <button id="btn-add-cart" class="btn-primary" style="width: 100%; margin-top: 2rem;">Añadir al Carrito</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <h3>AnimeCostura</h3>
+            <p>Modernizando el estilo Otaku.</p>
+        </div>
+    </footer>
+
+    <script src="../storage.js"></script>
+    <script src="product-detail.js"></script>
+    <script src="../nav-roles.js"></script>
+</body>
+</html>

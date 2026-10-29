@@ -1,0 +1,71 @@
+[
+  {
+    "id": 101,
+    "name": "Kitagawa Marín Hoodie Cosplay",
+    "price": "48.00",
+    "img": [
+      "../assets/media/marin.jpg",
+      "../assets/media/about-2.jpg"
+    ],
+    "desc": "Sudadera premium edición especial My Dress-Up Darling con acabados de alta costura.",
+    "sizes": "S, M, L, XL",
+    "colors": "Rosa, Negro, Blanco"
+  },
+  {
+    "id": 102,
+    "name": "Miyamoto Musashi Vagabond Oversized Tee",
+    "price": "32.00",
+    "img": [
+      "../assets/media/musashi.jpg",
+      "../assets/media/about-3.jpg"
+    ],
+    "desc": "Camiseta oversize de algodón peinado con estampado gráfico de alta definición del legendario espadachín.",
+    "sizes": "M, L, XL, XXL",
+    "colors": "Negro, Carbón"
+  },
+  {
+    "id": 103,
+    "name": "Noir Streetwear 4K Minimalist Hoodie",
+    "price": "45.00",
+    "img": [
+      "../assets/media/wallpaper-bw.jpg",
+      "../assets/media/about-1.jpg"
+    ],
+    "desc": "Sudadera urbana monocromática en blanco y negro con corte moderno y capucha forrada.",
+    "sizes": "S, M, L, XL",
+    "colors": "Negro, Blanco"
+  },
+  {
+    "id": 1,
+    "name": "Naruto Uzumaki Tee",
+    "price": "25.00",
+    "img": [
+      "https://images.unsplash.com/photo-1576566588028-59b5effec076?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+    ],
+    "desc": "Tee premium de Naruto",
+    "sizes": "S, M, L",
+    "colors": "Blanco"
+  },
+  {
+    "id": 2,
+    "name": "One Piece Hoodie",
+    "price": "45.00",
+    "img": [
+      "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+    ],
+    "desc": "Sudadera Luffy",
+    "sizes": "M, L, XL",
+    "colors": "Rojo"
+  },
+  {
+    "id": 3,
+    "name": "Attack on Titan Cap",
+    "price": "20.00",
+    "img": [
+      "https://images.unsplash.com/photo-1588850561417-57ca80785662?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
+    ],
+    "desc": "Gorra AoT",
+    "sizes": "Única",
+    "colors": "Marrón"
+  }
+]
