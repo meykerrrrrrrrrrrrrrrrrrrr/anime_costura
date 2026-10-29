@@ -1,11 +1,13 @@
 // --- Lógica de la Tienda AnimeCostura con Almacenamiento Ilimitado ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Verificación de Sesión
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) {
-        window.location.href = 'auth.html';
-        return;
-    }
+    // 1. Verificación de Sesión (Permite a cualquier usuario/móvil explorar el catálogo libremente)
+    const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
+        name: 'Invitado',
+        doc: 'invitado',
+        role: 'guest',
+        credits: 0,
+        status: 'Invitado'
+    };
 
     const productDisplay = document.getElementById('product-display');
     const searchInput = document.getElementById('shop-search');
@@ -172,6 +174,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {
             window.renderProducts(e.target.value);
+        });
+    }
+
+    // Botón de sincronización manual para clientes / móviles
+    const btnRefresh = document.getElementById('btn-refresh-shop');
+    if (btnRefresh) {
+        btnRefresh.addEventListener('click', async () => {
+            btnRefresh.textContent = '🔄 Sincronizando...';
+            try {
+                if (window.AnimeStorage) {
+                    await window.AnimeStorage.syncFromServer();
+                }
+                window.renderProducts(searchInput ? searchInput.value : '');
+            } catch (e) {
+                console.warn(e);
+            } finally {
+                btnRefresh.textContent = '🔄 Sincronizar Catálogo';
+            }
         });
     }
 

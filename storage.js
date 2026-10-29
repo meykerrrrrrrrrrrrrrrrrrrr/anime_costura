@@ -1,11 +1,11 @@
 // ====================================================================
 // STORAGE.JS - MOTOR DE ALMACENAMIENTO INFINITO (IndexedDB)
-// Preparado para GitHub & Vercel sin límites de 5MB de localStorage
+// Con Sincronización Automática Servidor / Móvil en Tiempo Real
 // ====================================================================
 
 const AnimeStorage = {
     dbName: 'AnimeCostura_DB',
-    dbVersion: 1,
+    dbVersion: 2,
     storeName: 'store',
     db: null,
     cache: {},
@@ -43,12 +43,15 @@ const AnimeStorage = {
     init() {
         if (this.readyPromise) return this.readyPromise;
 
+        // Limpieza de datos antiguos y preservación exclusiva de la cuenta ROOT
+        this.applyCleanStateReset();
+
         this.readyPromise = new Promise((resolve) => {
-            // 1. Cargar copia síncrona inicial de localStorage a memoria por si IndexedDB demora unos milisegundos
             this.loadFromLocalStorage();
 
             if (!window.indexedDB) {
-                console.warn("[AnimeStorage] IndexedDB no soportado en este navegador. Usando memoria/localStorage.");
+                console.warn("[AnimeStorage] IndexedDB no soportado en este navegador. Usando localStorage.");
+                this.autoRevalidateServer();
                 resolve(false);
                 return;
             }
@@ -64,18 +67,60 @@ const AnimeStorage = {
 
             req.onsuccess = async (e) => {
                 this.db = e.target.result;
-                // Sincronizar catálogo desde IndexedDB a la memoria
                 await this.syncFromDB();
+                // Revalidar en segundo plano contra el servidor sin bloquear
+                this.autoRevalidateServer();
                 resolve(true);
             };
 
             req.onerror = (e) => {
                 console.warn("[AnimeStorage] Error al abrir IndexedDB:", e);
+                this.autoRevalidateServer();
                 resolve(false);
             };
         });
 
+        // Revalidar automáticamente cuando el usuario regresa a la pestaña en su móvil
+        if (typeof document !== 'undefined') {
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    this.autoRevalidateServer();
+                }
+            });
+        }
+
         return this.readyPromise;
+    },
+
+    // Borrado definitivo de bases de datos demo, dejando únicamente la cuenta ROOT
+    applyCleanStateReset() {
+        const CLEAN_KEY = 'anime_db_cleaned_v5';
+        if (!localStorage.getItem(CLEAN_KEY)) {
+            // Eliminar registros de productos antiguos
+            localStorage.removeItem('anime_inventory');
+            localStorage.removeItem('anime_sales');
+            localStorage.removeItem('anime_finance_logs');
+            localStorage.removeItem('anime_orders');
+            localStorage.removeItem('anime_cart');
+
+            // Dejar exclusivamente la cuenta ROOT
+            const rootAccount = {
+                name: 'Administrador ROOT',
+                doc: 'root',
+                pass: '326247878',
+                whatsapp: '573000000000',
+                role: 'root',
+                credits: 9999,
+                status: 'Administrador'
+            };
+
+            localStorage.setItem('anime_users', JSON.stringify([rootAccount]));
+            localStorage.setItem('currentUser', JSON.stringify(rootAccount));
+
+            // Marcar limpieza realizada
+            localStorage.setItem(CLEAN_KEY, 'true');
+            console.log("[AnimeStorage] Base de datos restablecida a estado limpio. Solo cuenta ROOT activa.");
+        }
     },
 
     loadFromLocalStorage() {
@@ -83,7 +128,7 @@ const AnimeStorage = {
             const raw = localStorage.getItem('anime_inventory');
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed) && parsed.length > 0) {
+                if (Array.isArray(parsed)) {
                     this.cache['anime_inventory'] = parsed;
                 }
             }
@@ -99,16 +144,14 @@ const AnimeStorage = {
                 const req = os.get('anime_inventory');
 
                 req.onsuccess = async () => {
-                    if (req.result && Array.isArray(req.result) && req.result.length > 0) {
+                    if (req.result && Array.isArray(req.result)) {
                         this.cache['anime_inventory'] = req.result;
                         this.notifyUpdate();
                         resolve();
-                    } else if (this.cache['anime_inventory'] && this.cache['anime_inventory'].length > 0) {
-                        // Si IndexedDB estaba vacío pero había datos en memoria/localStorage, migrarlos a IndexedDB
+                    } else if (this.cache['anime_inventory']) {
                         await this.setInDB('anime_inventory', this.cache['anime_inventory']);
                         resolve();
                     } else {
-                        // Intentar cargar el catálogo base de GitHub/Vercel (data/inventory.json)
                         await this.fetchBaseFromJSON();
                         resolve();
                     }
@@ -121,29 +164,60 @@ const AnimeStorage = {
         });
     },
 
-    // Cargar data/inventory.json (Ideal para Vercel cuando un cliente nuevo entra a la web)
+    // Cargar data/inventory.json con evasión de caché para móviles (cache: 'no-store')
     async fetchBaseFromJSON() {
         try {
             const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
-            const res = await fetch(jsonPath);
+            const res = await fetch(jsonPath + '?t=' + Date.now(), {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+            });
+
             if (res.ok) {
                 const data = await res.json();
-                if (Array.isArray(data) && data.length > 0) {
+                if (Array.isArray(data)) {
                     this.cache['anime_inventory'] = data;
                     await this.setInDB('anime_inventory', data);
+                    try { localStorage.setItem('anime_inventory', JSON.stringify(data)); } catch(e){}
                     this.notifyUpdate();
                     return data;
                 }
             }
         } catch (e) {
-            // En modo archivo local (file://) fetch puede dar CORS, se usa el catálogo base incorporado
+            // Ignorado en entorno local sin servidor
         }
 
-        const base = this.getBaseInventory();
+        const base = this.getBaseInventory(); // Base vacía []
         this.cache['anime_inventory'] = base;
         await this.setInDB('anime_inventory', base);
-        this.notifyUpdate();
         return base;
+    },
+
+    // Revalidación inteligente de catálogo en segundo plano
+    // Resuelve el problema de que el móvil no se actualice al cambiar productos en el PC
+    async autoRevalidateServer() {
+        try {
+            const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
+            const res = await fetch(jsonPath + '?v=' + Date.now(), {
+                cache: 'no-store',
+                headers: { 'Cache-Control': 'no-cache' }
+            });
+
+            if (res.ok) {
+                const serverData = await res.json();
+                if (Array.isArray(serverData)) {
+                    const currentLocal = this.getInventory();
+                    // Comparar si el servidor tiene cambios respecto a la copia local
+                    if (JSON.stringify(serverData) !== JSON.stringify(currentLocal)) {
+                        console.log("[AnimeStorage] Catálogo actualizado detectado desde el servidor. Sincronizando dispositivo...");
+                        this.cache['anime_inventory'] = serverData;
+                        await this.setInDB('anime_inventory', serverData);
+                        try { localStorage.setItem('anime_inventory', JSON.stringify(serverData)); } catch(e){}
+                        this.notifyUpdate();
+                    }
+                }
+            }
+        } catch (e) {}
     },
 
     setInDB(key, value) {
@@ -161,65 +235,9 @@ const AnimeStorage = {
         });
     },
 
-    // Catálogo inicial predeterminado
+    // Catálogo inicial limpio: base de datos completamente vacía
     getBaseInventory() {
-        const prefix = this.isInPagesFolder() ? '../assets/media/' : 'assets/media/';
-        return [
-            {
-                id: 101,
-                name: 'Kitagawa Marín Hoodie Cosplay',
-                price: '48.00',
-                img: [prefix + 'marin.jpg', prefix + 'about-2.jpg'],
-                desc: 'Sudadera premium edición especial My Dress-Up Darling con acabados de alta costura.',
-                sizes: 'S, M, L, XL',
-                colors: 'Rosa, Negro, Blanco'
-            },
-            {
-                id: 102,
-                name: 'Miyamoto Musashi Vagabond Oversized Tee',
-                price: '32.00',
-                img: [prefix + 'musashi.jpg', prefix + 'about-3.jpg'],
-                desc: 'Camiseta oversize de algodón peinado con estampado gráfico de alta definición del legendario espadachín.',
-                sizes: 'M, L, XL, XXL',
-                colors: 'Negro, Carbón'
-            },
-            {
-                id: 103,
-                name: 'Noir Streetwear 4K Minimalist Hoodie',
-                price: '45.00',
-                img: [prefix + 'wallpaper-bw.jpg', prefix + 'about-1.jpg'],
-                desc: 'Sudadera urbana monocromática en blanco y negro con corte moderno y capucha forrada.',
-                sizes: 'S, M, L, XL',
-                colors: 'Negro, Blanco'
-            },
-            {
-                id: 1,
-                name: 'Naruto Uzumaki Tee',
-                price: '25.00',
-                img: ['https://images.unsplash.com/photo-1576566588028-59b5effec076?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'],
-                desc: 'Tee premium de Naruto confeccionada en algodón transpirable de alta densidad.',
-                sizes: 'S, M, L',
-                colors: 'Blanco'
-            },
-            {
-                id: 2,
-                name: 'One Piece Hoodie',
-                price: '45.00',
-                img: ['https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'],
-                desc: 'Sudadera temática de Luffy con forro térmico y estampado resistente a lavados.',
-                sizes: 'M, L, XL',
-                colors: 'Rojo'
-            },
-            {
-                id: 3,
-                name: 'Attack on Titan Cap',
-                price: '20.00',
-                img: ['https://images.unsplash.com/photo-1588850561417-57ca80785662?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80'],
-                desc: 'Gorra bordada con el emblema de las Alas de la Libertad.',
-                sizes: 'Única',
-                colors: 'Marrón'
-            }
-        ];
+        return [];
     },
 
     // Obtener inventario de forma síncrona inmediata
@@ -241,31 +259,28 @@ const AnimeStorage = {
 
         const base = this.getBaseInventory();
         this.cache['anime_inventory'] = base;
-        this.saveInventory(base);
         return base;
     },
 
-    // Guardar inventario de forma ilimitada sin avisos de "almacenamiento lleno"
+    // Guardar inventario de forma ilimitada y sincronizada
     saveInventory(data) {
         if (!Array.isArray(data)) return false;
 
         this.cache['anime_inventory'] = data;
 
-        // 1. Guardar en IndexedDB (Capacidad de Gigabytes, almacenamiento ilimitado)
+        // 1. Guardar en IndexedDB
         this.setInDB('anime_inventory', data);
 
-        // 2. Intentar guardar en localStorage silenciosamente
+        // 2. Guardar en localStorage
         try {
             localStorage.setItem('anime_inventory', JSON.stringify(data));
-        } catch (e) {
-            // Ignorado intencionalmente: Si excede los 5MB de localStorage, IndexedDB ya lo tiene seguro.
-        }
+        } catch (e) {}
 
         this.notifyUpdate();
         return true;
     },
 
-    // Notificar cambios para auto-recargar componentes
+    // Notificar cambios para auto-recargar cualquier pantalla abierta
     notifyUpdate() {
         window.dispatchEvent(new CustomEvent('animeInventoryUpdated', {
             detail: this.cache['anime_inventory']
@@ -309,10 +324,13 @@ const AnimeStorage = {
         });
     },
 
-    // Sincronizar catálogo fresco desde el archivo data/inventory.json desplegado en Vercel
+    // Forzar sincronización fresca directa desde el servidor
     async syncFromServer() {
         const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
-        const res = await fetch(jsonPath + '?t=' + Date.now());
+        const res = await fetch(jsonPath + '?force=' + Date.now(), {
+            cache: 'no-store',
+            headers: { 'Cache-Control': 'no-cache, no-store' }
+        });
         if (!res.ok) throw new Error("No se pudo obtener el archivo desde el servidor.");
         const data = await res.json();
         if (Array.isArray(data)) {

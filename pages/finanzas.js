@@ -16,17 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const addMoveBtn = document.getElementById('add-move-btn');
 
-    // Datos simulados para ventas (en un sistema real vendrían de una DB)
-    let salesData = JSON.parse(localStorage.getItem('anime_sales')) || [
-        { product: 'Naruto Uzumaki Tee', qty: 15 },
-        { product: 'One Piece Hoodie', qty: 8 },
-        { product: 'Attack on Titan Cap', qty: 20 },
-    ];
-
-    let financeLogs = JSON.parse(localStorage.getItem('anime_finance_logs')) || [
-        { desc: 'Venta Inicial', type: 'income', amount: 500 },
-        { desc: 'Compra de Telas', type: 'expense', amount: 200 },
-    ];
+    // Registros financieros limpios (sin datos demo)
+    let salesData = JSON.parse(localStorage.getItem('anime_sales')) || [];
+    let financeLogs = JSON.parse(localStorage.getItem('anime_finance_logs')) || [];
 
     function getInventoryCount() {
         const inv = window.AnimeStorage ? window.AnimeStorage.getInventory() : (JSON.parse(localStorage.getItem('anime_inventory')) || []);
@@ -50,9 +42,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderBestSellers() {
         bestSellersList.innerHTML = '';
-        // Ordenar por cantidad descendente
+        if (salesData.length === 0) {
+            bestSellersList.innerHTML = '<li style="padding: 1rem; color: #888; text-align: center;">No hay ventas registradas aún.</li>';
+            return;
+        }
         const sorted = [...salesData].sort((a, b) => b.qty - a.qty);
-
         sorted.forEach(item => {
             bestSellersList.innerHTML += `<li><span>${item.product}</span> <strong>${item.qty} vendidas</strong></li>`;
         });
@@ -60,6 +54,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderLogs() {
         financeTableBody.innerHTML = '';
+        if (financeLogs.length === 0) {
+            financeTableBody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 2rem; color: #888;">No hay movimientos registrados aún.</td></tr>';
+            return;
+        }
         financeLogs.forEach(log => {
             financeTableBody.innerHTML += `
                 <tr>

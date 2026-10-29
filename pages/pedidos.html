@@ -101,6 +101,19 @@
             width: 100%;
             font-weight: bold;
         }
+
+        @media (max-width: 600px) {
+            .orders-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+            .orders-container {
+                padding: 2.5rem 4%;
+            }
+            .order-card {
+                padding: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>

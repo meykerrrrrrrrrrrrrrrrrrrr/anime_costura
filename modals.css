@@ -72,3 +72,13 @@
     align-items: center;
     justify-content: center;
 }
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95% !important;
+        max-width: 95% !important;
+        margin: 5% auto !important;
+        padding: 1.5rem 1rem !important;
+        border-radius: 14px !important;
+    }
+}
