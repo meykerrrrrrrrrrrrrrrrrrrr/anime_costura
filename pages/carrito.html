@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeCostura - Carrito</title>
+    <title>AnimeCostura — Carrito de Compras</title>
     <link rel="stylesheet" href="../style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -15,8 +15,9 @@
                 <li><a href="../index.html">Inicio</a></li>
                 <li><a href="nosotros.html">Quiénes Somos</a></li>
                 <li><a href="tienda.html">Tienda</a></li>
-                <li><a href="diseno.html">Diseñador Pro</a></li>
                 <li><a href="inventario.html">Inventario</a></li>
+                <li><a href="perfil.html">Mi Perfil</a></li>
+                <li><a href="carrito.html" class="cart-nav-link active">🛒 Carrito</a></li>
             </ul>
         </nav>
     </header>
@@ -29,107 +30,115 @@
         <div class="anime-bg-overlay"></div>
     </div>
 
-    <section class="cart-section" style="background: transparent; min-height: 85vh; padding-top: 3rem;">
-        <h2 class="section-title" style="color: #ffffff; text-shadow: 0 4px 15px rgba(0,0,0,0.8); margin-bottom: 2rem;">Tu Carrito Otaku</h2>
+    <section class="cart-section" style="padding: 3.5rem 5%; min-height: 85vh;">
+        <div style="max-width: 1200px; margin: 0 auto 2rem;">
+            <h1 style="font-size: 2.2rem; letter-spacing: -0.576px; color: #f5f5f7; margin-bottom: 0.4rem;">Tu Carrito</h1>
+            <p style="color: #86868b; font-size: 0.95rem;">Revisa las prendas seleccionadas antes de proceder al pedido.</p>
+        </div>
+
         <div class="cart-container">
-            <div class="cart-table-wrapper glass-panel">
-                <table id="cart-table">
-                    <thead>
-                        <tr>
-                            <th>Imagen</th>
-                            <th>Producto</th>
-                            <th>Detalles</th>
-                            <th>Cantidad</th>
-                            <th>Subtotal</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cart-body">
-                        <!-- Items cargados por JS -->
-                    </tbody>
-                </table>
+            <div class="cart-items-container">
+                <div class="table-responsive">
+                    <table id="cart-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Foto</th>
+                                <th>Prenda</th>
+                                <th>Talla / Variante</th>
+                                <th style="width: 90px;">Cantidad</th>
+                                <th style="width: 110px;">Subtotal</th>
+                                <th style="width: 100px; text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cart-body">
+                            <!-- Items cargados por JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="cart-summary glass-panel">
-                <h3>Resumen del Pedido</h3>
-                <div class="summary-item">
+
+            <!-- Resumen de Pedido Estilo Apple Charcoal Stage -->
+            <div class="order-summary" style="height: fit-content;">
+                <h3 style="font-size: 1.3rem; color: #f5f5f7; letter-spacing: -0.28px; margin-bottom: 1.2rem;">Resumen</h3>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; color: #86868b; font-size: 0.95rem;">
                     <span>Total de prendas:</span>
-                    <span id="cart-total-qty">0</span>
+                    <strong style="color: #f5f5f7;" id="cart-total-qty">0</strong>
                 </div>
-                <div class="summary-item total">
-                    <span>Monto Total a Pagar:</span>
-                    <span id="cart-total-price">$0.00</span>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 1.1rem;">
+                    <span style="color: #f5f5f7; font-weight: 600;">Total a pagar:</span>
+                    <strong style="color: #0071e3; font-size: 1.35rem; letter-spacing: -0.28px;" id="cart-total-price">$0</strong>
                 </div>
-                <button id="btn-checkout" class="btn-primary" style="width: 100%; margin-top: 1rem;">Finalizar Compra</button>
-                <a href="tienda.html" class="btn-secondary" style="display: block; text-align: center; margin-top: 1rem; text-decoration: none;">Seguir Comprando</a>
+                <button id="btn-checkout" class="btn-primary" style="width: 100%; padding: 14px 20px;">
+                    Finalizar Compra
+                </button>
+                <a href="tienda.html" class="btn-secondary" style="display: block; text-align: center; margin-top: 10px; width: 100%; padding: 12px 20px;">
+                    Seguir Explorando
+                </a>
             </div>
         </div>
     </section>
 
     <!-- Modal para Ver Imagen en Grande -->
-    <div id="img-zoom-modal" class="modal" style="display: none; z-index: 3000;">
-        <div class="modal-content" style="width: auto; max-width: 80%; margin: 5% auto; text-align: center;">
-            <span class="close-zoom" style="cursor: pointer; float: right; font-size: 30px; font-weight: bold; color: #aaa;">&times;</span>
-            <img id="zoomed-img" src="" alt="Vista ampliada" style="max-width: 100%; max-height: 80vh; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+    <div id="img-zoom-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 3000; backdrop-filter: blur(12px); justify-content: center; align-items: center;" onclick="this.style.display='none'">
+        <div class="modal-content" style="max-width: 80%; margin: auto; text-align: center; background: transparent; border: none;">
+            <img id="zoomed-img" src="" alt="Vista ampliada" style="max-width: 100%; max-height: 80vh; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);">
         </div>
     </div>
 
-    <!-- Modal de Finalización de Compra -->
-    <div id="checkout-modal" class="modal" style="display: none; z-index: 2500;">
-        <div class="modal-content">
-            <span class="close-modal" id="close-checkout">&times;</span>
-            <h2 style="font-family: 'Permanent Marker'; color: var(--primary);">Finalizar Pedido</h2>
+    <!-- Modal de Finalización de Compra (Apple Charcoal Stage) -->
+    <div id="checkout-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2500; backdrop-filter: blur(12px);">
+        <div class="modal-content" style="background: #111111; border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.08); max-width: 580px; margin: 4% auto; padding: 2.5rem; color: #f5f5f7;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.4rem; color: #f5f5f7; letter-spacing: -0.28px; margin: 0;">Finalizar Pedido</h2>
+                <span class="close-modal" id="close-checkout" style="font-size: 1.8rem; color: #86868b; cursor: pointer;">&times;</span>
+            </div>
 
             <div id="checkout-step-1">
-                <p>Selecciona el método de entrega:</p>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
+                <p style="color: #86868b; margin-bottom: 1rem;">Selecciona el método de entrega:</p>
+                <div style="display: flex; gap: 12px; margin-bottom: 1.5rem;">
                     <button class="btn-primary" onclick="setDelivery('envio')" style="flex:1">Envío a Domicilio</button>
-                    <button class="btn-primary" onclick="setDelivery('local')" style="flex:1">Retiro en Local</button>
+                    <button class="btn-secondary" onclick="setDelivery('local')" style="flex:1">Retiro en Local</button>
                 </div>
             </div>
 
             <div id="checkout-step-2" style="display: none;">
-                <div id="delivery-info-envio" style="display: none; margin-bottom: 1rem;">
-                    <p><strong>Datos de Envío:</strong></p>
-                    <input type="text" id="delivery-city" placeholder="Municipio / Ciudad" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
-                    <input type="text" id="delivery-address" placeholder="Dirección Completa" style="width: 100%; padding: 0.5rem; margin-bottom: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
-                    <input type="text" id="delivery-ref" placeholder="Punto de Referencia" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #ddd;">
+                <div id="delivery-info-envio" style="display: none; margin-bottom: 1.2rem;">
+                    <p style="color: #f5f5f7; font-weight: 600; margin-bottom: 8px;">Datos de Envío:</p>
+                    <input type="text" id="delivery-city" placeholder="Municipio / Ciudad" style="margin-bottom: 8px;">
+                    <input type="text" id="delivery-address" placeholder="Dirección Completa" style="margin-bottom: 8px;">
+                    <input type="text" id="delivery-ref" placeholder="Punto de Referencia">
                 </div>
-                <div id="delivery-info-local" style="display: none; margin-bottom: 1rem;">
-                    <p><strong>Retiro en Local:</strong> El pedido estará listo para retirar.</p>
+                <div id="delivery-info-local" style="display: none; margin-bottom: 1.2rem;">
+                    <p style="color: #86868b;"><strong>Retiro en Local:</strong> El pedido se preparará para entrega directa.</p>
                 </div>
 
-                <p>Método de Pago:</p>
-                <select id="payment-method" style="width: 100%; padding: 0.5rem; margin-bottom: 1rem; border-radius: 5px; border: 1px solid #ddd;">
-                    <option value="transferencia">Transferencia / Nequi</option>
-                    <option value="efectivo">Efectivo</option>
+                <p style="color: #f5f5f7; font-weight: 600; margin-bottom: 8px;">Método de Pago:</p>
+                <select id="payment-method" style="margin-bottom: 1.2rem;">
+                    <option value="transferencia">Transferencia / Nequi / Daviplata</option>
+                    <option value="efectivo">Efectivo contra entrega</option>
                 </select>
 
-                <div id="payment-transfer-info" style="display: none; margin-bottom: 1rem; padding: 1rem; background: #f0f2f5; border-radius: 10px; border-left: 5px solid var(--primary);">
-                    <p>Por favor, realiza el pago a la siguiente cuenta:</p>
-                    <p id="admin-nequi-info" style="font-weight: bold; font-size: 1.2rem; color: var(--primary);">Cargando información...</p>
-                    <p style="font-size: 0.9rem;">Sube la captura del pago para validar:</p>
-                    <input type="file" id="payment-screenshot" accept="image/*" style="width: 100%; margin-top: 0.5rem;">
+                <div id="payment-transfer-info" style="display: none; margin-bottom: 1.2rem; padding: 1.2rem; background: rgba(0, 113, 227, 0.08); border-radius: 18px; border: 1px solid rgba(0, 113, 227, 0.3);">
+                    <p style="color: #f5f5f7; margin-bottom: 4px;">Transfiere a la siguiente cuenta:</p>
+                    <p id="admin-nequi-info" style="font-weight: 600; font-size: 1.2rem; color: #0071e3; margin-bottom: 8px;">Cargando información...</p>
+                    <p style="font-size: 0.85rem; color: #86868b; margin-bottom: 6px;">Adjunta comprobante de pago:</p>
+                    <input type="file" id="payment-screenshot" accept="image/*" style="background: rgba(255,255,255,0.04); border: 1px solid #6e6e73; padding: 8px 14px; border-radius: 980px; color: #f5f5f7;">
                 </div>
 
-                <div id="payment-cash-info" style="display: none; margin-bottom: 1rem;">
-                    <p>Monto con el que pagará (para el cambio):</p>
-                    <input type="number" id="payment-cash-amount" placeholder="Ej: 50000" style="width: 100%; padding: 0.5rem; border-radius: 5px; border: 1px solid #ddd;">
+                <div id="payment-cash-info" style="display: none; margin-bottom: 1.2rem;">
+                    <p style="color: #86868b; margin-bottom: 6px;">Monto con el que pagarás (para calcular cambio):</p>
+                    <input type="number" id="payment-cash-amount" placeholder="Ej: 50000">
                 </div>
 
-            <ul style="list-style: none; padding: 0; margin-bottom: 1rem; font-size: 0.9rem; color: #666;">
-                <li>✅ Datos de envío registrados</li>
-                <li>✅ Método de pago seleccionado</li>
-                <li>✅ Captura de pago adjuntada (si aplica)</li>
-            </ul>
-            <button id="btn-confirm-order" class="btn-primary" style="width: 100%; margin-top: 1rem;">Confirmar Pedido</button>
+                <button id="btn-confirm-order" class="btn-primary" style="width: 100%; padding: 14px 20px;">Confirmar Pedido</button>
+            </div>
         </div>
-    </div>
     </div>
 
     <footer>
         <div class="footer-content">
             <h3>AnimeCostura</h3>
-            <p>Modernizando el estilo Otaku.</p>
+            <p>Alta confección streetwear inspirada en el anime.</p>
         </div>
     </footer>
 

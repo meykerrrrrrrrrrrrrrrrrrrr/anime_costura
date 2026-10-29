@@ -1,20 +1,27 @@
 // ====================================================================
 // STORAGE.JS - MOTOR DE ALMACENAMIENTO INFINITO (IndexedDB)
-// Con Sincronización Automática Servidor / Móvil en Tiempo Real
+// Sincronización Automática en Tiempo Real (PC <-> Móvil)
+// Soporte Apple Dark Design System & Vercel Serverless
 // ====================================================================
 
 const AnimeStorage = {
     dbName: 'AnimeCostura_DB',
-    dbVersion: 2,
+    dbVersion: 3,
     storeName: 'store',
     db: null,
     cache: {},
     readyPromise: null,
     listeners: [],
+    isRevalidating: false,
 
-    // Detectar si la página actual está dentro de la carpeta /pages/
+    // Detectar si la página actual está dentro de la subcarpeta /pages/
     isInPagesFolder() {
         return window.location.pathname.includes('/pages/') || window.location.href.includes('/pages/');
+    },
+
+    // Obtener la ruta base relativa al archivo o endpoint
+    getRelativePath(target) {
+        return this.isInPagesFolder() ? `../${target}` : target;
     },
 
     // Formatear rutas de imágenes para que funcionen tanto en la raíz como en /pages/
@@ -39,20 +46,23 @@ const AnimeStorage = {
         }
     },
 
+    // Promesa de disponibilidad para evitar condiciones de carrera (Race Conditions)
+    ready() {
+        if (this.readyPromise) return this.readyPromise;
+        return this.init();
+    },
+
     // Inicialización del motor IndexedDB
     init() {
         if (this.readyPromise) return this.readyPromise;
 
-        // Limpieza de datos antiguos y preservación exclusiva de la cuenta ROOT
-        this.applyCleanStateReset();
-
         this.readyPromise = new Promise((resolve) => {
+            // 1. Cargar primero de localStorage a memoria para disponibilidad inmediata
             this.loadFromLocalStorage();
 
             if (!window.indexedDB) {
-                console.warn("[AnimeStorage] IndexedDB no soportado en este navegador. Usando localStorage.");
-                this.autoRevalidateServer();
-                resolve(false);
+                console.warn("[AnimeStorage] IndexedDB no soportado. Usando fallback en memoria y servidor.");
+                this.autoRevalidateServer().then(() => resolve(true));
                 return;
             }
 
@@ -68,59 +78,31 @@ const AnimeStorage = {
             req.onsuccess = async (e) => {
                 this.db = e.target.result;
                 await this.syncFromDB();
-                // Revalidar en segundo plano contra el servidor sin bloquear
-                this.autoRevalidateServer();
-                resolve(true);
+                // Revalidar en segundo plano contra el servidor / Vercel API
+                this.autoRevalidateServer().finally(() => {
+                    resolve(true);
+                });
             };
 
             req.onerror = (e) => {
                 console.warn("[AnimeStorage] Error al abrir IndexedDB:", e);
-                this.autoRevalidateServer();
-                resolve(false);
+                this.autoRevalidateServer().then(() => resolve(true));
             };
         });
 
-        // Revalidar automáticamente cuando el usuario regresa a la pestaña en su móvil
+        // Revalidar automáticamente cuando el usuario regresa a la pestaña o app en su móvil
         if (typeof document !== 'undefined') {
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible') {
                     this.autoRevalidateServer();
                 }
             });
+            window.addEventListener('pageshow', () => {
+                this.autoRevalidateServer();
+            });
         }
 
         return this.readyPromise;
-    },
-
-    // Borrado definitivo de bases de datos demo, dejando únicamente la cuenta ROOT
-    applyCleanStateReset() {
-        const CLEAN_KEY = 'anime_db_cleaned_v5';
-        if (!localStorage.getItem(CLEAN_KEY)) {
-            // Eliminar registros de productos antiguos
-            localStorage.removeItem('anime_inventory');
-            localStorage.removeItem('anime_sales');
-            localStorage.removeItem('anime_finance_logs');
-            localStorage.removeItem('anime_orders');
-            localStorage.removeItem('anime_cart');
-
-            // Dejar exclusivamente la cuenta ROOT
-            const rootAccount = {
-                name: 'Administrador ROOT',
-                doc: 'root',
-                pass: '326247878',
-                whatsapp: '573000000000',
-                role: 'root',
-                credits: 9999,
-                status: 'Administrador'
-            };
-
-            localStorage.setItem('anime_users', JSON.stringify([rootAccount]));
-            localStorage.setItem('currentUser', JSON.stringify(rootAccount));
-
-            // Marcar limpieza realizada
-            localStorage.setItem(CLEAN_KEY, 'true');
-            console.log("[AnimeStorage] Base de datos restablecida a estado limpio. Solo cuenta ROOT activa.");
-        }
     },
 
     loadFromLocalStorage() {
@@ -128,11 +110,13 @@ const AnimeStorage = {
             const raw = localStorage.getItem('anime_inventory');
             if (raw) {
                 const parsed = JSON.parse(raw);
-                if (Array.isArray(parsed)) {
+                if (Array.isArray(parsed) && parsed.length > 0) {
                     this.cache['anime_inventory'] = parsed;
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            // Ignorar errores de cuota o parseo
+        }
     },
 
     async syncFromDB() {
@@ -144,11 +128,11 @@ const AnimeStorage = {
                 const req = os.get('anime_inventory');
 
                 req.onsuccess = async () => {
-                    if (req.result && Array.isArray(req.result)) {
+                    if (req.result && Array.isArray(req.result) && req.result.length > 0) {
                         this.cache['anime_inventory'] = req.result;
                         this.notifyUpdate();
                         resolve();
-                    } else if (this.cache['anime_inventory']) {
+                    } else if (this.cache['anime_inventory'] && this.cache['anime_inventory'].length > 0) {
                         await this.setInDB('anime_inventory', this.cache['anime_inventory']);
                         resolve();
                     } else {
@@ -164,10 +148,10 @@ const AnimeStorage = {
         });
     },
 
-    // Cargar data/inventory.json con evasión de caché para móviles (cache: 'no-store')
+    // Cargar data/inventory.json con evasión de caché estricta para móviles
     async fetchBaseFromJSON() {
         try {
-            const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
+            const jsonPath = this.getRelativePath('data/inventory.json');
             const res = await fetch(jsonPath + '?t=' + Date.now(), {
                 cache: 'no-store',
                 headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
@@ -175,7 +159,7 @@ const AnimeStorage = {
 
             if (res.ok) {
                 const data = await res.json();
-                if (Array.isArray(data)) {
+                if (Array.isArray(data) && data.length > 0) {
                     this.cache['anime_inventory'] = data;
                     await this.setInDB('anime_inventory', data);
                     try { localStorage.setItem('anime_inventory', JSON.stringify(data)); } catch(e){}
@@ -184,40 +168,73 @@ const AnimeStorage = {
                 }
             }
         } catch (e) {
-            // Ignorado en entorno local sin servidor
+            console.warn('[AnimeStorage] Error cargando data/inventory.json:', e);
         }
 
-        const base = this.getBaseInventory(); // Base vacía []
-        this.cache['anime_inventory'] = base;
-        await this.setInDB('anime_inventory', base);
-        return base;
+        return this.cache['anime_inventory'] || [];
     },
 
-    // Revalidación inteligente de catálogo en segundo plano
-    // Resuelve el problema de que el móvil no se actualice al cambiar productos en el PC
+    // Revalidación inteligente en tiempo real: consulta Vercel API o data/inventory.json
     async autoRevalidateServer() {
+        if (this.isRevalidating) return this.getInventory();
+        this.isRevalidating = true;
+
         try {
-            const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
+            // 1. Intentar endpoint de API de Vercel /api/inventory
+            const apiPath = this.getRelativePath('api/inventory');
+            try {
+                const apiRes = await fetch(apiPath + '?v=' + Date.now(), {
+                    cache: 'no-store',
+                    headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+                });
+
+                if (apiRes.ok) {
+                    const serverData = await apiRes.json();
+                    if (Array.isArray(serverData) && serverData.length > 0) {
+                        const current = this.getInventory();
+                        // Si hay cambios en cantidad o contenido, actualizar
+                        if (serverData.length !== current.length || JSON.stringify(serverData.map(p=>p.id)) !== JSON.stringify(current.map(p=>p.id))) {
+                            this.cache['anime_inventory'] = serverData;
+                            await this.setInDB('anime_inventory', serverData);
+                            try { localStorage.setItem('anime_inventory', JSON.stringify(serverData)); } catch(e){}
+                            this.notifyUpdate();
+                            return serverData;
+                        }
+                    }
+                }
+            } catch (apiErr) {
+                // Si la API no está montada o estamos en un host estático, continuar con el JSON
+            }
+
+            // 2. Consulta de data/inventory.json
+            const jsonPath = this.getRelativePath('data/inventory.json');
             const res = await fetch(jsonPath + '?v=' + Date.now(), {
                 cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
+                headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
             });
 
             if (res.ok) {
                 const serverData = await res.json();
-                if (Array.isArray(serverData)) {
+                if (Array.isArray(serverData) && serverData.length > 0) {
                     const currentLocal = this.getInventory();
-                    // Comparar si el servidor tiene cambios respecto a la copia local
-                    if (JSON.stringify(serverData) !== JSON.stringify(currentLocal)) {
-                        console.log("[AnimeStorage] Catálogo actualizado detectado desde el servidor. Sincronizando dispositivo...");
+                    // Si el servidor tiene datos y nuestro local está vacío o tiene IDs distintos
+                    if (currentLocal.length === 0 || serverData.length !== currentLocal.length || JSON.stringify(serverData.map(p=>p.id)) !== JSON.stringify(currentLocal.map(p=>p.id))) {
+                        console.log("[AnimeStorage] 🔄 Catálogo actualizado recibido desde el servidor.");
                         this.cache['anime_inventory'] = serverData;
                         await this.setInDB('anime_inventory', serverData);
                         try { localStorage.setItem('anime_inventory', JSON.stringify(serverData)); } catch(e){}
                         this.notifyUpdate();
+                        return serverData;
                     }
                 }
             }
-        } catch (e) {}
+        } catch (e) {
+            // Ignorar errores de red temporales
+        } finally {
+            this.isRevalidating = false;
+        }
+
+        return this.getInventory();
     },
 
     setInDB(key, value) {
@@ -235,7 +252,7 @@ const AnimeStorage = {
         });
     },
 
-    // Catálogo inicial limpio: base de datos completamente vacía
+    // Catálogo inicial vacío si no hay datos
     getBaseInventory() {
         return [];
     },
@@ -257,37 +274,49 @@ const AnimeStorage = {
             }
         } catch (e) {}
 
-        const base = this.getBaseInventory();
-        this.cache['anime_inventory'] = base;
-        return base;
+        return [];
     },
 
-    // Guardar inventario de forma ilimitada y sincronizada
-    saveInventory(data) {
+    // Guardar inventario con almacenamiento ilimitado y sincronización automática
+    async saveInventory(data) {
         if (!Array.isArray(data)) return false;
 
         this.cache['anime_inventory'] = data;
 
-        // 1. Guardar en IndexedDB
-        this.setInDB('anime_inventory', data);
+        // 1. Guardar en IndexedDB local (capacidad ilimitada de gigabytes)
+        await this.setInDB('anime_inventory', data);
 
-        // 2. Guardar en localStorage
+        // 2. Guardar en localStorage (de forma segura, ignorando errores de cuota de 5MB)
         try {
             localStorage.setItem('anime_inventory', JSON.stringify(data));
-        } catch (e) {}
+        } catch (e) {
+            // Si la cuota de localStorage se excede debido a fotos HD en base64, IndexedDB lo respalda
+        }
 
+        // 3. Notificar a las pantallas abiertas localmente
         this.notifyUpdate();
+
+        // 4. Intentar guardar en la API de Vercel / servidor en segundo plano
+        try {
+            const apiPath = this.getRelativePath('api/inventory');
+            fetch(apiPath, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(() => {});
+        } catch (err) {}
+
         return true;
     },
 
     // Notificar cambios para auto-recargar cualquier pantalla abierta
     notifyUpdate() {
         window.dispatchEvent(new CustomEvent('animeInventoryUpdated', {
-            detail: this.cache['anime_inventory']
+            detail: this.cache['anime_inventory'] || []
         }));
     },
 
-    // Exportar catálogo completo en un archivo inventory.json listo para subir a GitHub / Vercel
+    // Exportar catálogo completo en un archivo inventory.json
     exportInventory() {
         const data = this.getInventory();
         const jsonStr = JSON.stringify(data, null, 2);
@@ -306,11 +335,11 @@ const AnimeStorage = {
     importInventory(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const data = JSON.parse(e.target.result);
                     if (Array.isArray(data)) {
-                        this.saveInventory(data);
+                        await this.saveInventory(data);
                         resolve(data);
                     } else {
                         reject(new Error("El archivo no contiene un catálogo válido."));
@@ -326,18 +355,7 @@ const AnimeStorage = {
 
     // Forzar sincronización fresca directa desde el servidor
     async syncFromServer() {
-        const jsonPath = this.isInPagesFolder() ? '../data/inventory.json' : 'data/inventory.json';
-        const res = await fetch(jsonPath + '?force=' + Date.now(), {
-            cache: 'no-store',
-            headers: { 'Cache-Control': 'no-cache, no-store' }
-        });
-        if (!res.ok) throw new Error("No se pudo obtener el archivo desde el servidor.");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-            this.saveInventory(data);
-            return data;
-        }
-        throw new Error("Formato inválido del servidor.");
+        return await this.autoRevalidateServer();
     }
 };
 

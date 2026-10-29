@@ -3,9 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeCostura - Finanzas</title>
+    <title>AnimeCostura — Finanzas</title>
     <link rel="stylesheet" href="../style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
+    <style>
+        .stat-card {
+            background: #111111 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 28px !important;
+            padding: 2rem !important;
+            box-shadow: none !important;
+        }
+        .stat-card h3 {
+            color: #86868b !important;
+            font-size: 0.85rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: -0.12px !important;
+            font-weight: 500 !important;
+            margin-bottom: 0.8rem !important;
+        }
+        .stat-card p {
+            font-size: 2.2rem !important;
+            font-weight: 600 !important;
+            letter-spacing: -0.5px !important;
+        }
+        .stat-card.income p { color: #00d959 !important; }
+        .stat-card.expenses p { color: #ff3037 !important; }
+        .stat-card.net p { color: #0071e3 !important; }
+        .stat-card.stock p { color: #f5f5f7 !important; }
+        .detail-box {
+            background: #111111 !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 28px !important;
+            padding: 2rem !important;
+            box-shadow: none !important;
+            color: #f5f5f7 !important;
+        }
+        .detail-box h3 {
+            color: #f5f5f7 !important;
+            font-size: 1.25rem !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+            padding-bottom: 0.8rem !important;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -15,14 +55,15 @@
                 <li><a href="../index.html">Inicio</a></li>
                 <li><a href="nosotros.html">Quiénes Somos</a></li>
                 <li><a href="tienda.html">Tienda</a></li>
-                <li><a href="diseno.html">Diseñador Pro</a></li>
                 <li><a href="inventario.html">Inventario</a></li>
                 <li><a href="finanzas.html" class="active">Finanzas</a></li>
+                <li><a href="clientes.html">Clientes</a></li>
+                <li><a href="perfil.html">Mi Perfil</a></li>
+                <li><a href="carrito.html" class="cart-nav-link">🛒 Carrito</a></li>
             </ul>
         </nav>
     </header>
 
-    <!-- Fondo de Video Anime Fijo -->
     <div class="anime-page-bg">
         <video autoplay muted loop playsinline>
             <source src="../assets/media/video-hero.mp4" type="video/mp4">
@@ -30,57 +71,61 @@
         <div class="anime-bg-overlay"></div>
     </div>
 
-    <section class="finance-section" style="background: transparent; min-height: 85vh; padding: 4rem 5%;">
-        <h2 class="section-title" style="color: #ffffff; text-shadow: 0 4px 15px rgba(0,0,0,0.8);">Panel de Control Financiero</h2>
+    <section class="finance-section" style="background: transparent; min-height: 85vh; padding: 3.5rem 5%;">
+        <div style="max-width: 1200px; margin: 0 auto 2.5rem;">
+            <h1 style="font-size: 2.2rem; letter-spacing: -0.576px; color: #f5f5f7; margin-bottom: 0.4rem;">Panel Financiero</h1>
+            <p style="color: #86868b; font-size: 0.95rem;">Métricas de ingresos, egresos y rendimiento comercial.</p>
+        </div>
 
-        <div class="finance-grid">
-            <!-- Tarjetas de Resumen -->
+        <div class="finance-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; max-width: 1200px; margin: 0 auto 3rem;">
             <div class="stat-card income">
                 <h3>Ingresos Totales</h3>
-                <p id="stat-income">$0.00</p>
+                <p id="stat-income">$0</p>
             </div>
             <div class="stat-card expenses">
                 <h3>Egresos Totales</h3>
-                <p id="stat-expenses">$0.00</p>
+                <p id="stat-expenses">$0</p>
             </div>
             <div class="stat-card net">
-                <h3>Producto Neto</h3>
-                <p id="stat-net">$0.00</p>
+                <h3>Balance Neto</h3>
+                <p id="stat-net">$0</p>
             </div>
             <div class="stat-card stock">
-                <h3>Items en Inventario</h3>
+                <h3>Prendas en Stock</h3>
                 <p id="stat-stock">0</p>
             </div>
         </div>
 
-        <div class="finance-details">
+        <div class="finance-details" style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; max-width: 1200px; margin: 0 auto;">
             <div class="detail-box">
                 <h3>Prendas Más Vendidas</h3>
-                <ul id="best-sellers-list">
+                <ul id="best-sellers-list" style="list-style: none; padding: 0; margin-top: 1rem;">
                     <!-- Cargado dinámicamente -->
                 </ul>
             </div>
             <div class="detail-box">
                 <h3>Registro de Movimientos</h3>
-                <div class="movement-form">
-                    <input type="text" id="move-desc" placeholder="Concepto (ej: Venta Camiseta)">
-                    <input type="number" id="move-amount" placeholder="Monto">
-                    <select id="move-type">
+                <div class="movement-form" style="display: flex; gap: 10px; margin: 1.2rem 0; flex-wrap: wrap;">
+                    <input type="text" id="move-desc" placeholder="Concepto (ej: Venta Camiseta)" style="flex: 2;">
+                    <input type="number" id="move-amount" placeholder="Monto" style="flex: 1;">
+                    <select id="move-type" style="flex: 1;">
                         <option value="income">Ingreso</option>
                         <option value="expense">Egreso</option>
                     </select>
-                    <button id="add-move-btn" class="btn-primary">Registrar</button>
+                    <button id="add-move-btn" class="btn-primary" style="padding: 10px 20px;">Registrar</button>
                 </div>
-                <table id="finance-table">
-                    <thead>
-                        <tr>
-                            <th>Concepto</th>
-                            <th>Tipo</th>
-                            <th>Monto</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                <div class="table-responsive">
+                    <table id="finance-table">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Tipo</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </section>
@@ -88,7 +133,7 @@
     <footer>
         <div class="footer-content">
             <h3>AnimeCostura</h3>
-            <p>Modernizando el estilo Otaku.</p>
+            <p>Alta confección streetwear inspirada en el anime.</p>
         </div>
     </footer>
 

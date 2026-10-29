@@ -1,6 +1,11 @@
-// --- Lógica del Inventario Profesional con Almacenamiento Ilimitado (IndexedDB) ---
+// ====================================================================
+// INVENTARIO.JS - Gestión Profesional de Inventario AnimeCostura
+// Apple Dark Design System (Series 12 Reference)
+// Almacenamiento Ilimitado (IndexedDB) & Sincronización Automática
+// ====================================================================
+
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Asegurar sesión de administrador para gestión de tienda
+    // 1. Asegurar sesión de administrador ROOT para gestión
     let currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser || currentUser.role !== 'root') {
         currentUser = {
@@ -10,7 +15,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             credits: 9999,
             status: 'Administrador'
         };
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        try {
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        } catch(e) {}
     }
 
     const inventoryBody = document.getElementById('inventory-body');
@@ -20,13 +27,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.getElementById('inventory-search');
     const inventoryCountEl = document.getElementById('inventory-count');
 
-    // Botones de Sincronización GitHub & Vercel
+    // Botones de Sincronización & Respaldo
     const btnExport = document.getElementById('btn-export-catalog');
     const btnImportTrigger = document.getElementById('btn-import-trigger');
     const fileImportCatalog = document.getElementById('file-import-catalog');
     const btnSyncServer = document.getElementById('btn-sync-server');
 
-    // Elementos del Modal de Edición
+    // Modal de Edición
     const editModal = document.getElementById('edit-modal');
     const closeModal = document.querySelector('.close-modal');
     const saveEditBtn = document.getElementById('save-edit-btn');
@@ -36,8 +43,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     let currentEditImages = [];
     let pendingNewImages = [];
 
-    // Compresión inteligente con Canvas para mantener nitidez HD/4K y agilidad
-    function compressImage(file, maxWidth = 1200, maxHeight = 1200, quality = 0.82) {
+    // 2. Esperar a que el motor IndexedDB / Cloud termine de inicializarse
+    if (window.AnimeStorage && window.AnimeStorage.ready) {
+        await window.AnimeStorage.ready();
+    }
+
+    // Compresión inteligente con Canvas: balance perfecto entre nitidez Retina y agilidad web
+    function compressImage(file, maxWidth = 760, maxHeight = 760, quality = 0.72) {
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -71,13 +83,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Previsualización interactiva de imágenes seleccionadas para nuevo producto
+    // Previsualización interactiva de imágenes seleccionadas
     if (newProdFilesInput) {
         newProdFilesInput.addEventListener('change', async (e) => {
             const files = Array.from(e.target.files);
             if (files.length === 0) return;
 
-            newProdPreviews.innerHTML = '<span style="color:#a29bfe; font-size:0.85rem;">Procesando imágenes en alta definición...</span>';
+            newProdPreviews.innerHTML = '<span style="color:#86868b; font-size:0.85rem;">Procesando imágenes en alta definición...</span>';
             const compressedList = await Promise.all(files.map(f => compressImage(f)));
             pendingNewImages = [...pendingNewImages, ...compressedList];
             renderNewProductPreviews();
@@ -92,8 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             wrap.style.position = 'relative';
             wrap.style.display = 'inline-block';
             wrap.innerHTML = `
-                <img src="${src}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #6c5ce7;">
-                <button type="button" onclick="removePendingImage(${idx})" style="position: absolute; top: -6px; right: -6px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+                <img src="${src}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2);">
+                <button type="button" onclick="removePendingImage(${idx})" style="position: absolute; top: -6px; right: -6px; background: #ff3037; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;">×</button>
             `;
             newProdPreviews.appendChild(wrap);
         });
@@ -104,10 +116,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         renderNewProductPreviews();
     };
 
-    // 2. Renderizar la tabla del inventario con buscador en tiempo real
+    // 3. Renderizar la tabla del inventario con buscador en tiempo real
     window.renderInventory = function(filterQuery = null) {
+        if (!inventoryBody) return;
         const query = (filterQuery !== null ? filterQuery : (searchInput ? searchInput.value : '')).toLowerCase().trim();
-        const fullInventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : (JSON.parse(localStorage.getItem('anime_inventory')) || []);
+        const fullInventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
 
         const filtered = fullInventory.filter(prod => {
             if (!query) return true;
@@ -122,7 +135,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (inventoryCountEl) {
             inventoryCountEl.textContent = query 
                 ? `(${filtered.length} de ${fullInventory.length})` 
-                : `(${fullInventory.length} prendas)`;
+                : `(${fullInventory.length} prendas registradas)`;
         }
 
         inventoryBody.innerHTML = '';
@@ -130,8 +143,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (filtered.length === 0) {
             inventoryBody.innerHTML = `
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 3rem; color: #cbd5e1; font-size: 1.15rem; background: rgba(0,0,0,0.3); border-radius: 12px;">
-                        ${query ? `No se encontraron prendas que coincidan con "${query}". 🔍` : 'El inventario está actualmente vacío. Agrega un nuevo diseño en el formulario izquierdo. ✨'}
+                    <td colspan="5" style="text-align: center; padding: 3rem; color: #86868b; font-size: 1rem; background: #111111;">
+                        ${query ? `No se encontraron prendas que coincidan con "${query}".` : 'El catálogo está actualmente vacío. Añade una nueva prenda en el panel de la izquierda.'}
                     </td>
                 </tr>
             `;
@@ -142,126 +155,124 @@ document.addEventListener('DOMContentLoaded', async () => {
             const rawSrc = (prod.img && prod.img[0]) ? prod.img[0] : '../assets/media/marin.jpg';
             const imgSrc = window.formatImagePath ? window.formatImagePath(rawSrc) : rawSrc;
             const row = document.createElement('tr');
+            row.style.borderBottom = '1px solid rgba(255, 255, 255, 0.08)';
+
             row.innerHTML = `
-                <td>
-                    <img src="${imgSrc}" width="60" height="60" style="object-fit: cover; border-radius: 10px; border: 2px solid #6c5ce7; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+                <td style="padding: 14px 16px;">
+                    <img src="${imgSrc}" width="54" height="54" style="object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15);">
                 </td>
-                <td>
-                    <div style="font-weight: 700; color: #ffffff; font-size: 1.05rem; margin-bottom: 3px;">${prod.name}</div>
-                    <small style="color: #cbd5e1; font-size: 0.82rem; display: block; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.desc || 'Prenda exclusiva'}</small>
+                <td style="padding: 14px 16px;">
+                    <div style="font-weight: 600; color: #f5f5f7; font-size: 0.95rem; margin-bottom: 2px;">${prod.name}</div>
+                    <small style="color: #86868b; font-size: 0.8rem; display: block; max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${prod.desc || 'Prenda exclusiva'}</small>
                 </td>
-                <td>
-                    <span style="color: #00cec9; font-weight: 800; font-family: 'Permanent Marker', cursive; font-size: 1.25rem; text-shadow: 0 2px 8px rgba(0,206,201,0.3);">$${prod.price}</span>
+                <td style="padding: 14px 16px;">
+                    <span style="color: #0071e3; font-weight: 600; font-size: 1.1rem; letter-spacing: -0.2px;">$${prod.price}</span>
                 </td>
-                <td>
-                    <span style="background: rgba(108, 92, 231, 0.25); color: #ffffff; padding: 5px 12px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(108, 92, 231, 0.5);">${prod.sizes || 'S, M, L'}</span>
+                <td style="padding: 14px 16px;">
+                    <span style="background: rgba(255, 255, 255, 0.05); color: #f5f5f7; padding: 4px 10px; border-radius: 980px; font-weight: 500; font-size: 0.8rem; border: 1px solid #6e6e73;">${prod.sizes || 'S, M, L'}</span>
                 </td>
-                <td style="white-space: nowrap;">
-                    <button class="btn-secondary" style="padding: 8px 16px; font-size: 13px; margin-right: 6px; border-radius: 8px; cursor: pointer; background: #6c5ce7; border: 1px solid #a29bfe; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);" onclick="openEditModal(${prod.id})">✏️ Editar</button>
-                    <button class="btn-danger" style="padding: 8px 16px; font-size: 13px; border-radius: 8px; cursor: pointer; background: #e74c3c; border: 1px solid #ff7675; color: #ffffff; font-weight: 700; box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);" onclick="deleteProduct(${prod.id})">🗑️ Eliminar</button>
+                <td style="padding: 14px 16px; white-space: nowrap;">
+                    <button class="btn-action-edit" style="padding: 6px 14px; font-size: 12px; margin-right: 6px; border-radius: 9999px; cursor: pointer; background: transparent; border: 1px solid #ffffff; color: #ffffff; font-weight: 500;" onclick="openEditModal(${prod.id})">Editar</button>
+                    <button class="btn-action-delete" style="padding: 6px 14px; font-size: 12px; border-radius: 9999px; cursor: pointer; background: rgba(255, 48, 55, 0.15); border: 1px solid #ff3037; color: #ff3037; font-weight: 500;" onclick="deleteProduct(${prod.id})">Eliminar</button>
                 </td>
             `;
             inventoryBody.appendChild(row);
         });
     };
 
-    // 3. Eliminar producto de forma definitiva
-    window.deleteProduct = function(id) {
-        if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+    // 4. Eliminar producto
+    window.deleteProduct = async function(id) {
+        if (confirm('¿Estás seguro de que deseas eliminar este producto del inventario?')) {
             let inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
             inventory = inventory.filter(p => p.id != id);
 
             if (window.AnimeStorage) {
-                window.AnimeStorage.saveInventory(inventory);
-            } else {
-                localStorage.setItem('anime_inventory', JSON.stringify(inventory));
+                await window.AnimeStorage.saveInventory(inventory);
             }
             window.renderInventory();
         }
     };
 
-    // 4. Agregar nuevo producto con capacidad ilimitada
-    addProdBtn.addEventListener('click', async () => {
-        const nameInput = document.getElementById('new-prod-name');
-        const priceInput = document.getElementById('new-prod-price');
-        const descInput = document.getElementById('new-prod-desc');
-        const sizesInput = document.getElementById('new-prod-sizes');
-        const colorsInput = document.getElementById('new-prod-colors');
-        const presetSelect = document.getElementById('new-prod-preset');
+    // 5. Agregar nuevo producto con capacidad ilimitada
+    if (addProdBtn) {
+        addProdBtn.addEventListener('click', async () => {
+            const nameInput = document.getElementById('new-prod-name');
+            const priceInput = document.getElementById('new-prod-price');
+            const descInput = document.getElementById('new-prod-desc');
+            const sizesInput = document.getElementById('new-prod-sizes');
+            const colorsInput = document.getElementById('new-prod-colors');
+            const presetSelect = document.getElementById('new-prod-preset');
 
-        const name = nameInput.value.trim();
-        const rawPrice = priceInput.value.trim();
-        const desc = descInput.value.trim();
-        const sizes = sizesInput.value.trim();
-        const colors = colorsInput.value.trim();
-        const presetVal = presetSelect ? presetSelect.value : '';
+            const name = nameInput.value.trim();
+            const rawPrice = priceInput.value.trim();
+            const desc = descInput.value.trim();
+            const sizes = sizesInput.value.trim();
+            const colors = colorsInput.value.trim();
+            const presetVal = presetSelect ? presetSelect.value : '';
 
-        if (!name || !rawPrice) {
-            alert('Por favor ingresa al menos el Nombre del Diseño y el Precio.');
-            return;
-        }
-
-        const cleanPrice = rawPrice.replace(/[^0-9.]/g, '') || rawPrice;
-
-        addProdBtn.disabled = true;
-        addProdBtn.textContent = 'Guardando en Almacenamiento Ilimitado...';
-
-        try {
-            let finalImages = [...pendingNewImages];
-
-            // Si no subió archivos manuales pero seleccionó un preajuste
-            if (finalImages.length === 0 && presetVal) {
-                finalImages = [presetVal];
+            if (!name || !rawPrice) {
+                alert('Por favor ingresa al menos el Nombre de la Prenda y el Precio.');
+                return;
             }
 
-            // Imagen por defecto si no eligió nada
-            if (finalImages.length === 0) {
-                finalImages = ['../assets/media/marin.jpg'];
+            const cleanPrice = rawPrice.replace(/[^0-9.]/g, '') || rawPrice;
+
+            addProdBtn.disabled = true;
+            addProdBtn.textContent = 'Guardando en Catálogo...';
+
+            try {
+                let finalImages = [...pendingNewImages];
+
+                if (finalImages.length === 0 && presetVal) {
+                    finalImages = [presetVal];
+                }
+
+                if (finalImages.length === 0) {
+                    finalImages = ['../assets/media/marin.jpg'];
+                }
+
+                const inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
+                const newProduct = {
+                    id: Date.now(),
+                    name: name,
+                    price: cleanPrice,
+                    desc: desc || 'Prenda exclusiva confeccionada por AnimeCostura con estándares de alta costura.',
+                    sizes: sizes || 'S, M, L, XL',
+                    colors: colors || 'Negro, Blanco',
+                    img: finalImages
+                };
+
+                inventory.unshift(newProduct);
+
+                if (window.AnimeStorage) {
+                    await window.AnimeStorage.saveInventory(inventory);
+                }
+
+                window.renderInventory();
+
+                // Limpiar formulario y fotos pendientes
+                nameInput.value = '';
+                priceInput.value = '';
+                descInput.value = '';
+                sizesInput.value = '';
+                colorsInput.value = '';
+                if (presetSelect) presetSelect.value = '';
+                if (newProdFilesInput) newProdFilesInput.value = '';
+                pendingNewImages = [];
+                renderNewProductPreviews();
+
+                alert(`✨ ¡Prenda "${name}" registrada exitosamente con ${finalImages.length} foto(s)!`);
+            } catch (error) {
+                console.error("Error al registrar prenda:", error);
+                alert("No se pudo agregar la prenda. Revisa la consola.");
+            } finally {
+                addProdBtn.disabled = false;
+                addProdBtn.textContent = 'Guardar en Catálogo';
             }
+        });
+    }
 
-            const inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
-            const newProduct = {
-                id: Date.now(),
-                name: name,
-                price: cleanPrice,
-                desc: desc || 'Prenda exclusiva confeccionada por AnimeCostura con materiales de máxima calidad textil.',
-                sizes: sizes || 'S, M, L, XL',
-                colors: colors || 'Negro, Blanco',
-                img: finalImages
-            };
-
-            inventory.unshift(newProduct);
-
-            if (window.AnimeStorage) {
-                window.AnimeStorage.saveInventory(inventory);
-            } else {
-                localStorage.setItem('anime_inventory', JSON.stringify(inventory));
-            }
-
-            window.renderInventory();
-
-            // Limpiar formulario y fotos pendientes
-            nameInput.value = '';
-            priceInput.value = '';
-            descInput.value = '';
-            sizesInput.value = '';
-            colorsInput.value = '';
-            if (presetSelect) presetSelect.value = '';
-            if (newProdFilesInput) newProdFilesInput.value = '';
-            pendingNewImages = [];
-            renderNewProductPreviews();
-
-            alert(`✨ ¡"${name}" guardado exitosamente con ${finalImages.length} foto(s)!`);
-        } catch (error) {
-            console.error("Error al agregar producto:", error);
-            alert("No se pudo agregar el producto. Revisa la consola.");
-        } finally {
-            addProdBtn.disabled = false;
-            addProdBtn.textContent = 'Guardar en Inventario';
-        }
-    });
-
-    // 5. Modal de Edición
+    // 6. Modal de Edición
     window.openEditModal = function(id) {
         currentEditId = id;
         const inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
@@ -281,10 +292,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentEditImages = [...(prod.img || [])];
         renderEditImages();
 
-        editModal.style.display = 'block';
+        if (editModal) editModal.style.display = 'block';
     };
 
     function renderEditImages() {
+        if (!editImgPreview) return;
         editImgPreview.innerHTML = '';
         currentEditImages.forEach((rawSrc, index) => {
             const imgSrc = window.formatImagePath ? window.formatImagePath(rawSrc) : rawSrc;
@@ -294,8 +306,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             div.style.display = 'inline-block';
             div.style.margin = '4px';
             div.innerHTML = `
-                <img src="${imgSrc}" style="width:70px; height:70px; object-fit:cover; border-radius:6px; border:1px solid #6c5ce7;">
-                <button type="button" onclick="removeEditImage(${index})" style="position:absolute; top:-5px; right:-5px; background:#e74c3c; color:white; border:none; border-radius:50%; width:22px; height:22px; cursor:pointer; font-weight:bold;">×</button>
+                <img src="${imgSrc}" style="width:65px; height:65px; object-fit:cover; border-radius:10px; border:1px solid rgba(255,255,255,0.2);">
+                <button type="button" onclick="removeEditImage(${index})" style="position:absolute; top:-5px; right:-5px; background:#ff3037; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer; font-weight:bold; font-size:12px;">×</button>
             `;
             editImgPreview.appendChild(div);
         });
@@ -308,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (closeModal) {
         closeModal.onclick = () => {
-            editModal.style.display = 'none';
+            if (editModal) editModal.style.display = 'none';
             currentEditId = null;
         };
     }
@@ -320,76 +332,75 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    saveEditBtn.addEventListener('click', async () => {
-        const name = document.getElementById('edit-prod-name').value.trim();
-        const rawPrice = document.getElementById('edit-prod-price').value.trim();
-        const desc = document.getElementById('edit-prod-desc').value.trim();
-        const sizes = document.getElementById('edit-prod-sizes').value.trim();
-        const colors = document.getElementById('edit-prod-colors').value.trim();
-        const fileInput = document.getElementById('edit-prod-files');
-        const files = fileInput ? fileInput.files : [];
+    if (saveEditBtn) {
+        saveEditBtn.addEventListener('click', async () => {
+            const name = document.getElementById('edit-prod-name').value.trim();
+            const rawPrice = document.getElementById('edit-prod-price').value.trim();
+            const desc = document.getElementById('edit-prod-desc').value.trim();
+            const sizes = document.getElementById('edit-prod-sizes').value.trim();
+            const colors = document.getElementById('edit-prod-colors').value.trim();
+            const fileInput = document.getElementById('edit-prod-files');
+            const files = fileInput ? fileInput.files : [];
 
-        if (!name || !rawPrice) {
-            alert('Nombre y Precio son obligatorios.');
-            return;
-        }
-
-        const cleanPrice = rawPrice.replace(/[^0-9.]/g, '') || rawPrice;
-
-        saveEditBtn.disabled = true;
-        saveEditBtn.textContent = 'Guardando Cambios...';
-
-        try {
-            let newImages = [];
-            if (files && files.length > 0) {
-                newImages = await Promise.all(Array.from(files).map(file => compressImage(file)));
+            if (!name || !rawPrice) {
+                alert('Nombre y Precio son obligatorios.');
+                return;
             }
 
-            const updatedImages = [...currentEditImages, ...newImages];
-            if (updatedImages.length === 0) {
-                updatedImages.push('../assets/media/marin.jpg');
-            }
+            const cleanPrice = rawPrice.replace(/[^0-9.]/g, '') || rawPrice;
 
-            const inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
-            const prodIndex = inventory.findIndex(p => p.id == currentEditId);
+            saveEditBtn.disabled = true;
+            saveEditBtn.textContent = 'Guardando Cambios...';
 
-            if (prodIndex !== -1) {
-                inventory[prodIndex] = {
-                    ...inventory[prodIndex],
-                    name,
-                    price: cleanPrice,
-                    desc,
-                    sizes,
-                    colors,
-                    img: updatedImages
-                };
-
-                if (window.AnimeStorage) {
-                    window.AnimeStorage.saveInventory(inventory);
-                } else {
-                    localStorage.setItem('anime_inventory', JSON.stringify(inventory));
+            try {
+                let newImages = [];
+                if (files && files.length > 0) {
+                    newImages = await Promise.all(Array.from(files).map(file => compressImage(file)));
                 }
 
-                window.renderInventory();
-                editModal.style.display = 'none';
-                if (fileInput) fileInput.value = '';
-                alert('¡Producto actualizado con éxito!');
-            }
-        } catch (error) {
-            console.error("Error al actualizar producto:", error);
-            alert("Hubo un error al actualizar el producto.");
-        } finally {
-            saveEditBtn.disabled = false;
-            saveEditBtn.textContent = 'Guardar Cambios';
-        }
-    });
+                const updatedImages = [...currentEditImages, ...newImages];
+                if (updatedImages.length === 0) {
+                    updatedImages.push('../assets/media/marin.jpg');
+                }
 
-    // 6. Botones de Sincronización GitHub & Vercel
+                const inventory = window.AnimeStorage ? window.AnimeStorage.getInventory() : [];
+                const prodIndex = inventory.findIndex(p => p.id == currentEditId);
+
+                if (prodIndex !== -1) {
+                    inventory[prodIndex] = {
+                        ...inventory[prodIndex],
+                        name,
+                        price: cleanPrice,
+                        desc,
+                        sizes,
+                        colors,
+                        img: updatedImages
+                    };
+
+                    if (window.AnimeStorage) {
+                        await window.AnimeStorage.saveInventory(inventory);
+                    }
+
+                    window.renderInventory();
+                    if (editModal) editModal.style.display = 'none';
+                    if (fileInput) fileInput.value = '';
+                    alert('¡Prenda actualizada con éxito!');
+                }
+            } catch (error) {
+                console.error("Error al actualizar prenda:", error);
+                alert("Hubo un error al actualizar la prenda.");
+            } finally {
+                saveEditBtn.disabled = false;
+                saveEditBtn.textContent = 'Guardar Cambios';
+            }
+        });
+    }
+
+    // 7. Botones de Sincronización & Respaldo
     if (btnExport) {
         btnExport.addEventListener('click', () => {
             if (window.AnimeStorage) {
                 window.AnimeStorage.exportInventory();
-                alert("📥 Archivo 'inventory.json' descargado.\n\nColócalo en la carpeta 'data/' de tu proyecto y súbelo a GitHub para que Vercel actualice tu tienda en vivo.");
             }
         });
     }
@@ -404,7 +415,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (window.AnimeStorage) {
                     await window.AnimeStorage.importInventory(file);
                     window.renderInventory();
-                    alert("📤 ¡Catálogo importado exitosamente desde JSON!");
+                    alert("📤 ¡Catálogo importado exitosamente!");
                 }
             } catch (err) {
                 alert("Error al importar: " + err.message);
@@ -417,16 +428,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (btnSyncServer) {
         btnSyncServer.addEventListener('click', async () => {
             try {
-                btnSyncServer.textContent = 'Recargando...';
+                btnSyncServer.textContent = 'Sincronizando...';
                 if (window.AnimeStorage) {
                     await window.AnimeStorage.syncFromServer();
                     window.renderInventory();
-                    alert("🔄 ¡Catálogo sincronizado exitosamente con el servidor!");
+                    alert("🔄 ¡Catálogo sincronizado exitosamente!");
                 }
             } catch (err) {
-                alert("No se pudo sincronizar directamente desde el servidor: " + err.message);
+                alert("No se pudo sincronizar: " + err.message);
             } finally {
-                btnSyncServer.textContent = '🔄 Recargar de Servidor';
+                btnSyncServer.textContent = '🔄 Revalidar Catálogo';
             }
         });
     }

@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeCostura - Tienda</title>
+    <title>AnimeCostura — Tienda & Catálogo Oficial</title>
     <link rel="stylesheet" href="../style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -22,7 +22,7 @@
         </nav>
     </header>
 
-    <!-- Fondo de Video Anime Fijo con Máscara Estética -->
+    <!-- Fondo de Video Anime Fijo -->
     <div class="anime-page-bg">
         <video autoplay muted loop playsinline>
             <source src="../assets/media/video-hero.mp4" type="video/mp4">
@@ -30,37 +30,38 @@
         <div class="anime-bg-overlay"></div>
     </div>
 
-    <!-- Banner Superior con Video Anime Secundario -->
-    <section class="anime-video-banner" style="min-height: 320px; border-bottom: 2px solid rgba(108, 92, 231, 0.4);">
+    <!-- Banner Superior Estilo Apple Stage con Video Secundario -->
+    <section class="anime-video-banner">
         <video autoplay muted loop playsinline>
             <source src="../assets/media/video-secondary.mp4" type="video/mp4">
         </video>
         <div class="banner-overlay"></div>
         <div class="banner-content">
             <h2>Colección AnimeCostura</h2>
-            <p>Diseños urbanos y cosplay confeccionados con dedicación, inspirados en el arte manga y anime.</p>
-            <div class="search-container" style="margin: 0 auto; max-width: 650px;">
-                <input type="text" id="shop-search" placeholder="Buscar por personaje, prenda o estilo (ej: Marín, Musashi, Hoodie)...">
+            <p>Diseños urbanos confeccionados con dedicación artesanal, inspirados en el arte manga y anime.</p>
+            <div class="search-container">
+                <input type="text" id="shop-search" placeholder="Buscar por personaje, prenda o estilo (ej: Gojo, Maki, Sukuna)...">
                 <span class="search-icon">🔍</span>
             </div>
-            <div style="margin-top: 1rem; display: flex; justify-content: center; gap: 10px;">
-                <button id="btn-refresh-shop" style="background: rgba(108, 92, 231, 0.35); border: 1px solid rgba(108, 92, 231, 0.7); color: #fff; padding: 7px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; backdrop-filter: blur(8px);">
+            <div style="margin-top: 1.2rem; display: flex; justify-content: center; gap: 12px;">
+                <button id="btn-refresh-shop" class="btn-secondary" style="font-size: 13px; padding: 8px 18px;">
                     🔄 Sincronizar Catálogo
                 </button>
             </div>
         </div>
     </section>
 
-    <section class="products" style="background: transparent; padding-top: 2rem;">
-        <div class="product-grid" id="product-display" style="background: transparent; border: none; gap: 25px;">
-            <!-- Los productos se renderizan dinámicamente -->
+    <!-- Cuadrícula de Productos Apple Dark Stage -->
+    <section class="products" style="background: transparent; padding-top: 3rem;">
+        <div class="product-grid" id="product-display">
+            <!-- Los productos se renderizan dinámicamente con estilo 28px card -->
         </div>
     </section>
 
     <footer>
         <div class="footer-content">
             <h3>AnimeCostura</h3>
-            <p>Modernizando el estilo Otaku.</p>
+            <p>Alta confección streetwear inspirada en el anime.</p>
         </div>
     </footer>
 

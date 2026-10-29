@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeCostura - Inicio</title>
+    <title>AnimeCostura — Alta Confección Streetwear</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -19,6 +19,7 @@
                 <li><a href="pages/finanzas.html">Finanzas</a></li>
                 <li><a href="pages/clientes.html">Clientes</a></li>
                 <li><a href="pages/perfil.html">Mi Perfil</a></li>
+                <li><a href="pages/carrito.html" class="cart-nav-link">🛒 Carrito</a></li>
             </ul>
         </nav>
     </header>
@@ -26,12 +27,11 @@
     <section class="hero">
         <video autoplay muted loop playsinline class="hero-video">
             <source src="assets/media/video-hero.mp4" type="video/mp4">
-            Tu navegador no soporta videos.
         </video>
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <h1>Moda Otaku Modernizada</h1>
-            <p>Lleva tu pasión por el anime al siguiente nivel con diseños vanguardistas y personalizados con la más alta calidad textil.</p>
+            <p>Prendas de alta costura confeccionadas a mano, inspiradas en la disciplina y la pasión de la cultura manga y anime.</p>
             <div class="hero-btns">
                 <a href="pages/tienda.html" class="btn-primary">Explorar Catálogo</a>
                 <a href="pages/nosotros.html" class="btn-secondary">Nuestra Historia</a>
@@ -43,7 +43,7 @@
     <section class="anime-combo-section">
         <div class="anime-combo-header">
             <h2>Pasión & Esfuerzo Textil</h2>
-            <p>Frases y convicciones que nacen del amor a la costura artesanal y el espíritu de nunca rendirse.</p>
+            <p>Convicciones nacidas del amor a la costura artesanal y el espíritu inquebrantable de superación.</p>
         </div>
         <div class="anime-combo-grid">
             <!-- Tarjeta 1: Pasión por la Costura -->
@@ -94,23 +94,23 @@
         </video>
         <div class="banner-overlay"></div>
         <div class="banner-content">
-            <h2>El Taller Otaku en Movimiento</h2>
-            <p>Cada puntada es el resultado de pasión artesanal y veneración por la cultura anime. Viste prendas hechas con identidad y alma.</p>
-            <a href="pages/tienda.html" class="btn-primary" style="display: inline-block;">Ver Colección Completa</a>
+            <h2>El Taller en Movimiento</h2>
+            <p>Cada puntada es el resultado de pasión artesanal y devoción por la cultura anime. Viste prendas hechas con identidad y alma.</p>
+            <a href="pages/tienda.html" class="btn-primary" style="display: inline-flex;">Ver Colección Completa</a>
         </div>
     </section>
 
     <!-- Fusión Visual: Galería Resumen -->
-    <section class="anime-combo-section dark-mode">
+    <section class="anime-combo-section">
         <div class="anime-combo-header">
             <h2>Nuestra Esencia Textil</h2>
             <p>La unión entre la pasión por la costura y el compromiso de emprender con el corazón.</p>
         </div>
         <div class="anime-fusion-banner">
             <div>
-                <h3 style="font-family: 'Permanent Marker', cursive; font-size: 2rem; color: #a29bfe; margin-bottom: 1rem;">Hecho a Pulso y Pasión</h3>
-                <p style="color: #cbd5e1; line-height: 1.6; margin-bottom: 1.5rem;">Creemos firmemente en el poder de la dedicación. Cada detalle, costura y diseño refleja las ganas inquebrantables de salir adelante y rendir tributo a lo que amamos.</p>
-                <a href="pages/nosotros.html" class="btn-secondary" style="display:inline-block;">Conoce Nuestra Historia</a>
+                <h3 style="font-size: 1.8rem; color: #f5f5f7; margin-bottom: 1rem; letter-spacing: -0.28px;">Hecho a Pulso y Pasión</h3>
+                <p style="color: #86868b; line-height: 1.6; margin-bottom: 1.8rem;">Creemos firmemente en el poder de la dedicación. Cada detalle, costura y silueta refleja las ganas inquebrantables de salir adelante y rendir tributo a lo que amamos.</p>
+                <a href="pages/nosotros.html" class="btn-secondary" style="display:inline-flex;">Conoce Nuestra Historia</a>
             </div>
             <div class="anime-fusion-gallery">
                 <div class="anime-fusion-thumb" onclick="window.location.href='pages/nosotros.html'" style="cursor: pointer;">
@@ -118,12 +118,12 @@
                     <span>Fundador</span>
                 </div>
                 <div class="anime-fusion-thumb" onclick="window.location.href='pages/nosotros.html'" style="cursor: pointer;">
-                    <img src="assets/media/about-2.jpg" alt="Pasión Textil">
-                    <span>Dedicación</span>
+                    <img src="assets/media/about-2.jpg" alt="Costura y Pasión">
+                    <span>Costura</span>
                 </div>
                 <div class="anime-fusion-thumb" onclick="window.location.href='pages/nosotros.html'" style="cursor: pointer;">
-                    <img src="assets/media/about-3.jpg" alt="Corte & Actitud">
-                    <span>Identidad</span>
+                    <img src="assets/media/about-3.jpg" alt="Actitud y Corte">
+                    <span>Actitud</span>
                 </div>
             </div>
         </div>
@@ -132,9 +132,11 @@
     <footer>
         <div class="footer-content">
             <h3>AnimeCostura</h3>
-            <p>Modernizando el estilo Otaku.</p>
+            <p>Alta confección streetwear inspirada en el anime.</p>
         </div>
     </footer>
+
+    <!-- Scripts -->
     <script src="storage.js"></script>
     <script src="nav-roles.js"></script>
 </body>

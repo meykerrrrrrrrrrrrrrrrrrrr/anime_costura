@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AnimeCostura - Detalles del Producto</title>
+    <title>AnimeCostura — Detalle de Prenda</title>
     <link rel="stylesheet" href="../style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&family=Permanent+Marker&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Permanent+Marker&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
@@ -14,10 +14,10 @@
             <ul>
                 <li><a href="../index.html">Inicio</a></li>
                 <li><a href="nosotros.html">Quiénes Somos</a></li>
-                <li><a href="tienda.html">Tienda</a></li>
+                <li><a href="tienda.html" class="active">Tienda</a></li>
                 <li><a href="inventario.html">Inventario</a></li>
                 <li><a href="perfil.html">Mi Perfil</a></li>
-                <li><a href="carrito.html">🛒 Carrito</a></li>
+                <li><a href="carrito.html" class="cart-nav-link">🛒 Carrito</a></li>
             </ul>
         </nav>
     </header>
@@ -30,35 +30,44 @@
         <div class="anime-bg-overlay"></div>
     </div>
 
+    <!-- Escenario de Detalle de Prenda (Apple Charcoal Stage, 28px Radius) -->
     <section class="product-detail-section" style="padding: 4rem 5%; min-height: 85vh;">
-        <div class="product-detail-container glass-panel" style="padding: 3rem; margin-top: 1rem;">
+        <div class="product-detail-container">
             <div class="product-gallery">
                 <div class="main-image-container">
-                    <img id="main-product-img" src="" alt="Producto">
+                    <img id="main-product-img" src="" alt="Prenda Seleccionada">
                 </div>
                 <div class="thumbnail-grid" id="thumbnail-grid">
-                    <!-- Miniaturas cargadas por JS -->
+                    <!-- Miniaturas cargadas dinámicamente con 10px radius -->
                 </div>
             </div>
             <div class="product-info-detail">
-                <h1 id="prod-title">Cargando...</h1>
+                <h1 id="prod-title">Cargando prenda...</h1>
                 <p id="prod-price" class="price-tag">$0.00</p>
                 <div class="detail-divider"></div>
-                <div class="detail-item">
-                    <strong>Descripción:</strong>
-                    <p id="prod-desc">Cargando descripción...</p>
+                <div class="detail-item" style="margin-bottom: 2rem;">
+                    <span style="font-size: 0.82rem; color: #86868b; text-transform: uppercase; font-weight: 600; letter-spacing: -0.12px; display: block; margin-bottom: 6px;">Descripción & Confección</span>
+                    <p id="prod-desc" style="font-size: 0.95rem; color: #d1d1d6; line-height: 1.5;">Cargando descripción...</p>
                 </div>
                 <div class="order-configuration">
-                    <h3 style="color: #ff00ff; margin-bottom: 1rem;">Configurar Pedido</h3>
+                    <span style="font-size: 0.82rem; color: #86868b; text-transform: uppercase; font-weight: 600; letter-spacing: -0.12px; display: block; margin-bottom: 10px;">Configurar Talla & Variante</span>
                     <div id="config-container">
-                        <!-- Generado dinámicamente por JS -->
+                        <!-- Generado dinámicamente por JS con estilo Apple Charcoal -->
                     </div>
                 </div>
-                <div class="total-section" style="text-align: right; margin-top: 20px; font-weight: bold; border-top: 1px solid #444; padding-top: 10px;">
-                    <p>Total prendas: <span id="total-count">0</span></p>
-                    <p>Total estimado: <span id="total-price">$0.00</span></p>
+                <div class="total-section" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+                    <div>
+                        <span style="color: #86868b; font-size: 0.85rem; display: block;">Prendas seleccionadas</span>
+                        <strong style="color: #f5f5f7; font-size: 1.1rem;" id="total-count">0</strong>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="color: #86868b; font-size: 0.85rem; display: block;">Total estimado</span>
+                        <strong style="color: #0071e3; font-size: 1.4rem; letter-spacing: -0.28px;" id="total-price">$0</strong>
+                    </div>
                 </div>
-                <button id="btn-add-cart" class="btn-primary" style="width: 100%; margin-top: 2rem;">Añadir al Carrito</button>
+                <button id="btn-add-cart" class="btn-primary" style="width: 100%; margin-top: 2rem; font-size: 1rem; padding: 14px 28px;">
+                    Añadir al Carrito
+                </button>
             </div>
         </div>
     </section>
@@ -66,10 +75,11 @@
     <footer>
         <div class="footer-content">
             <h3>AnimeCostura</h3>
-            <p>Modernizando el estilo Otaku.</p>
+            <p>Alta confección streetwear inspirada en el anime.</p>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script src="../storage.js"></script>
     <script src="product-detail.js"></script>
     <script src="../nav-roles.js"></script>
