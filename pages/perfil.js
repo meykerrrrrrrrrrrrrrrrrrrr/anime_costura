@@ -78,8 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 fullBgVideo.src = fullBgData;
                 fullBgVideo.style.display = 'block';
                 fullBgVideo.muted = true;
+                fullBgVideo.defaultMuted = true;
                 fullBgVideo.loop = true;
                 fullBgVideo.playsInline = true;
+                fullBgVideo.setAttribute('muted', '');
+                fullBgVideo.setAttribute('playsinline', '');
+                fullBgVideo.setAttribute('webkit-playsinline', '');
+                fullBgVideo.setAttribute('preload', 'auto');
                 fullBgVideo.style.objectPosition = position;
                 fullBgVideo.play().catch(e => console.log("Autoplay prevented: ", e));
             } else {

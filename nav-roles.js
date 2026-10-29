@@ -88,9 +88,71 @@ function setupResponsiveTables() {
     });
 }
 
+// --- Reproducción Automática y Recuperación de Videos Ambientales Anime ---
+function initVideoAutoplay() {
+    const videos = document.querySelectorAll('video');
+    if (!videos || !videos.length) return;
+
+    videos.forEach(video => {
+        // Garantizar propiedades estrictas de autoplay móvil y desktop (iOS Safari / Android Chrome / Edge)
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('preload', 'auto');
+
+        const tryPlay = () => {
+            const promise = video.play();
+            if (promise !== undefined) {
+                promise.catch(() => {
+                    // Browser policy suspended autoplay until gesture
+                });
+            }
+        };
+
+        tryPlay();
+
+        video.addEventListener('loadedmetadata', () => {
+            if (video.paused) tryPlay();
+        });
+
+        video.addEventListener('canplay', () => {
+            if (video.paused) tryPlay();
+        });
+    });
+
+    // Desbloqueo garantizado con cualquier primer gesto táctil o de navegación del usuario
+    const unlockOnGesture = () => {
+        videos.forEach(v => {
+            if (v.paused) {
+                v.muted = true;
+                v.play().catch(() => {});
+            }
+        });
+    };
+
+    ['touchstart', 'touchend', 'click', 'scroll', 'pointerdown'].forEach(evt => {
+        window.addEventListener(evt, unlockOnGesture, { passive: true, once: true });
+    });
+}
+
 // Inicializar en la carga del documento
 document.addEventListener('DOMContentLoaded', () => {
     handleNavigationRoles();
     setupResponsiveNav();
     setupResponsiveTables();
+    initVideoAutoplay();
+});
+
+// Reactivar si el usuario regresa de otra pestaña o historial (bfcache)
+window.addEventListener('pageshow', () => {
+    initVideoAutoplay();
+});
+
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+        initVideoAutoplay();
+    }
 });
